@@ -1,0 +1,83 @@
+import 'package:e_chart/e_chart.dart';
+
+///极坐标-径向轴
+class RadiusAxis extends BaseAxis {
+  final double offsetAngle;
+
+  const RadiusAxis({
+    this.offsetAngle = 0,
+    super.show,
+    super.type = AxisType.value,
+    super.min,
+    super.max,
+    super.splitNumber,
+    super.logBase,
+    super.interval,
+    super.maxInterval,
+    super.minInterval,
+    super.inverse,
+    super.categoryList,
+    super.categoryCenter,
+    super.timeRange,
+    super.timeType,
+    super.axisName,
+    super.axisLine,
+    super.axisLabel,
+    super.splitLine,
+    super.splitArea,
+    super.axisTick,
+    super.axisPointer,
+    super.alignTicks,
+  });
+
+  RadiusAxis copy({
+    double? offsetAngle,
+    bool? show,
+    AxisType? type,
+    List<String>? categoryList,
+    bool? categoryCenter,
+    bool? alignTicks,
+    TimeType? timeType,
+    Pair<DateTime, DateTime>? timeRange,
+    num? min,
+    num? max,
+    int? splitNumber,
+    num? minInterval,
+    num? maxInterval,
+    num? interval,
+    int? logBase,
+    bool? inverse,
+    AxisName? axisName,
+    AxisLine? axisLine,
+    AxisLabel? axisLabel,
+    AxisTick? axisTick,
+    SplitLine? splitLine,
+    SplitArea? splitArea,
+    AxisPointer? axisPointer,
+  }) {
+    return RadiusAxis(
+      offsetAngle: offsetAngle ?? this.offsetAngle,
+      show: show ?? this.show,
+      type: type ?? this.type,
+      categoryList: categoryList ?? this.categoryList,
+      categoryCenter: categoryCenter ?? this.categoryCenter,
+      alignTicks: alignTicks ?? this.alignTicks,
+      timeType: timeType ?? this.timeType,
+      timeRange: timeRange ?? this.timeRange,
+      min: min ?? this.min,
+      max: max ?? this.max,
+      splitNumber: splitNumber ?? this.splitNumber,
+      minInterval: minInterval ?? this.minInterval,
+      maxInterval: maxInterval ?? this.maxInterval,
+      interval: interval ?? this.interval,
+      logBase: logBase ?? this.logBase,
+      inverse: inverse ?? this.inverse,
+      axisName: axisName ?? this.axisName,
+      axisLine: axisLine ?? this.axisLine,
+      axisLabel: axisLabel ?? this.axisLabel,
+      axisTick: axisTick ?? this.axisTick,
+      splitLine: splitLine ?? this.splitLine,
+      splitArea: splitArea ?? this.splitArea,
+    );
+  }
+}
