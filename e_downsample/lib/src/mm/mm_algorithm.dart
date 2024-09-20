@@ -2,21 +2,21 @@ import 'dart:core';
 
 import 'package:meta/meta.dart';
 
-import '../../event.dart';
-import '../bucket_based_algorithm.dart';
-import '../fixed_time_bucket_splitter.dart';
+import '../../ds_algorithm.dart';
+import '../base_algorithm.dart';
+import '../bucket_splitter.dart';
 import 'mm_bucket.dart';
 import 'mm_bucket_factory.dart';
 
-class MMAlgorithm extends BucketBasedAlgorithm<MMBucket, Event> {
+class MMAlgorithm extends BucketBasedAlgorithm<MMBucket, OrderData> {
   MMAlgorithm() {
     setBucketFactory(MMBucketFactory());
-    setSpliter(FixedTimeBucketSplitter<MMBucket, Event>());
+    setSplitter(FixedTimeBucketSplitter<MMBucket, OrderData>());
   }
 
   @protected
   @override
-  List<Event> prepare(List<Event> data) {
+  List<OrderData> prepare(List<OrderData> data) {
     return data;
   }
 

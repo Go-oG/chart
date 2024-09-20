@@ -1,14 +1,13 @@
-import '../event.dart';
+import '../ds_algorithm.dart';
 
-class PlainEvent implements Event {
-  final int _time;
-
+class PlainEvent implements OrderData {
+  final num _time;
   final double _value;
 
   const PlainEvent(this._time, this._value);
 
   @override
-  int getTime() {
+  num getOrder() {
     return _time;
   }
 
@@ -19,19 +18,13 @@ class PlainEvent implements Event {
 
   @override
   int get hashCode {
-    final int prime = 31;
-    int result = 1;
-    result = (prime * result + (_time ^ (_time >>> 32))).toInt();
-    return result;
+    return Object.hash(_time, _value);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) {
       return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
     }
     return other is PlainEvent && other._time == _time;
   }

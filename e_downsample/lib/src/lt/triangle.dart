@@ -1,9 +1,9 @@
 import '../weighted_event.dart';
 
 class Triangle {
-  WeightedEvent? last;
-  WeightedEvent? curr;
-  WeightedEvent? next;
+  WeightEvent? last;
+  WeightEvent? curr;
+  WeightEvent? next;
 
   void _updateWeight() {
     var last = this.last;
@@ -13,9 +13,9 @@ class Triangle {
     if (last == null || curr == null || next == null) {
       return;
     }
-    int dx1 = curr.getTime() - last.getTime();
-    int dx2 = last.getTime() - next.getTime();
-    int dx3 = next.getTime() - curr.getTime();
+    num dx1 = curr.getOrder() - last.getOrder();
+    num dx2 = last.getOrder() - next.getOrder();
+    num dx3 = next.getOrder() - curr.getOrder();
     double y1 = next.getValue();
     double y2 = curr.getValue();
     double y3 = last.getValue();
@@ -23,14 +23,14 @@ class Triangle {
     curr.setWeight(s);
   }
 
-  void calc(WeightedEvent? e) {
+  void calc(WeightEvent? e) {
     last = curr;
     curr = next;
     next = e;
     _updateWeight();
   }
 
-  void calc2(WeightedEvent? last, WeightedEvent? curr, WeightedEvent? next) {
+  void calc2(WeightEvent? last, WeightEvent? curr, WeightEvent? next) {
     this.last = last;
     this.curr = curr;
     this.next = next;

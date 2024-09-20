@@ -1,20 +1,18 @@
-import '../bucket_factory.dart';
+
+import '../bucket.dart';
 import '../bucket_splitter.dart';
-import '../fixed_num_bucket_splitter.dart';
 import '../weighted_event.dart';
 import 'linked_bucket_node.dart';
 import 'ltweighted_bucket.dart';
 
-class LTDynamicBucketSplitter implements BucketSplitter<LTWeightedBucket, WeightedEvent> {
-  FixedNumBucketSplitter<LTWeightedBucket, WeightedEvent> fs = FixedNumBucketSplitter();
+class LTDynamicBucketSplitter implements BucketSplitter<LTWeightedBucket, WeightEvent> {
+  FixedNumBucketSplitter<LTWeightedBucket, WeightEvent> fs = FixedNumBucketSplitter();
   double iterationRate = 0.1;
   int maxIteration = 500;
 
   @override
-  List<LTWeightedBucket> split(BucketFactory<LTWeightedBucket> factory, List<WeightedEvent> data, int threshold) {
-    // first split equally
+  List<LTWeightedBucket> split(BucketFactory<LTWeightedBucket> factory, List<WeightEvent> data, int threshold) {
     List<LTWeightedBucket> buckets = fs.split(factory, data, threshold);
-    // resize buckets
     LinkedBucketNode head = LinkedBucketNode.fromList(buckets);
     for (var i = getItCount(data.length, threshold); i >= 0; i--) {
       LinkedBucketNode max = findMaxSSE(head)!;

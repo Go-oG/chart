@@ -7,7 +7,7 @@ class LTOneBucketWeightCalculator implements LTWeightCalculator {
   @override
   void calcWeight(Triangle triangle, List<LTWeightedBucket> buckets) {
     for (LTWeightedBucket bucket in buckets) {
-      for (WeightedEvent? event in bucket.events) {
+      for (WeightEvent? event in bucket.events) {
         triangle.calc(event);
       }
     }

@@ -1,19 +1,20 @@
 import 'dart:core';
 
-import '../../event.dart';
+import 'package:e_downsample/ds_algorithm.dart';
+
 import '../bucket.dart';
 import '../weighted_event.dart';
 
 class LTWeightedBucket implements Bucket {
   int _index = 0;
-  List<WeightedEvent?> events = [];
-  WeightedEvent? _selected;
-  WeightedEvent? _average;
+  List<WeightEvent?> events = [];
+  WeightEvent? _selected;
+  WeightEvent? _average;
   double sse = -1;
 
   LTWeightedBucket();
 
-  LTWeightedBucket.of(WeightedEvent event) {
+  LTWeightedBucket.of(WeightEvent event) {
     _index = 1;
     events.add(event);
   }
@@ -29,26 +30,26 @@ class LTWeightedBucket implements Bucket {
     LTWeightedBucket b = LTWeightedBucket.ofSize(events.length);
     b._index = _index;
     for (int i = 0; i < _index; i++) {
-      b.events[i] = WeightedEvent(events[i]!.getEvent());
+      b.events[i] = WeightEvent(events[i]!.getEvent());
     }
     return b;
   }
 
   @override
-  void selectInto(List<Event> result) {
-    for (WeightedEvent e in select()) {
+  void selectInto(List<OrderData> result) {
+    for (WeightEvent e in select()) {
       result.add(e.getEvent());
     }
   }
 
   @override
-  void add(Event e) {
+  void add(OrderData e) {
     if (_index < events.length) {
-      events[_index++] = e as WeightedEvent;
+      events[_index++] = e as WeightEvent;
     }
   }
 
-  WeightedEvent? get(int i) {
+  WeightEvent? get(int i) {
     return i < _index ? events[i] : null;
   }
 
@@ -56,25 +57,25 @@ class LTWeightedBucket implements Bucket {
     return _index;
   }
 
-  WeightedEvent average() {
+  WeightEvent average() {
     if (null == _average) {
       if (_index == 1) {
         _average = events[0];
       } else {
         double valueSum = 0;
-        int timeSum = 0;
+        num timeSum = 0;
         for (int i = 0; i < _index; i++) {
-          Event e = events[i]!;
+          OrderData e = events[i]!;
           valueSum += e.getValue();
-          timeSum += e.getTime();
+          timeSum += e.getOrder();
         }
-        _average = WeightedEvent.of(timeSum ~/ _index, valueSum / _index);
+        _average = WeightEvent.of(timeSum ~/ _index, valueSum / _index);
       }
     }
     return _average!;
   }
 
-  List<WeightedEvent> select() {
+  List<WeightEvent> select() {
     if (_index == 0) {
       return [];
     }
@@ -103,7 +104,7 @@ class LTWeightedBucket implements Bucket {
       double nextVal = next.get(0)!.getValue();
       double avg = lastVal + nextVal;
       for (int i = 0; i < _index; i++) {
-        Event e = events[i]!;
+        OrderData e = events[i]!;
         avg += e.getValue();
       }
       avg = avg / (_index + 2);
@@ -111,7 +112,7 @@ class LTWeightedBucket implements Bucket {
       double nextSe = _sequarErrors(nextVal, avg);
       sse = lastSe + nextSe;
       for (int i = 0; i < _index; i++) {
-        Event e = events[i]!;
+        OrderData e = events[i]!;
         sse += _sequarErrors(e.getValue(), avg);
       }
     }

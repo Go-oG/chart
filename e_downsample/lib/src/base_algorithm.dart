@@ -1,27 +1,23 @@
 import 'dart:core';
-
 import 'package:meta/meta.dart';
-
-import '../down_sampling_algorithm.dart';
-import '../event.dart';
+import '../ds_algorithm.dart';
 import 'bucket.dart';
-import 'bucket_factory.dart';
 import 'bucket_splitter.dart';
 
-abstract class BucketBasedAlgorithm<B extends Bucket, E extends Event> implements DownSamplingAlgorithm {
+abstract class BucketBasedAlgorithm<B extends Bucket, E extends OrderData> implements DownSamplingAlgorithm {
   @protected
-  late BucketSplitter<B, E> spliter;
+  late BucketSplitter<B, E> splitter;
   @protected
   late BucketFactory<B> factory;
 
   @protected
-  List<E> prepare(List<Event> data);
+  List<E> prepare(List<OrderData> data);
 
   @protected
   void beforeSelect(List<B> buckets, int threshold);
 
   @override
-  List<Event> process(List<Event> events, int threshold) {
+  List<OrderData> process(List<OrderData> events, int threshold) {
     int dataSize = events.length;
     if (threshold >= dataSize || dataSize < 3) {
       return events;
@@ -29,11 +25,11 @@ abstract class BucketBasedAlgorithm<B extends Bucket, E extends Event> implement
 
     List<E> preparedData = prepare(events);
 
-    List<B> buckets = spliter.split(factory, preparedData, threshold);
+    List<B> buckets = splitter.split(factory, preparedData, threshold);
 
     // calculating weight or something else
     beforeSelect(buckets, threshold);
-    List<Event> result = [];
+    List<OrderData> result = [];
     // select from every bucket
     for (Bucket bucket in buckets) {
       bucket.selectInto(result);
@@ -41,8 +37,8 @@ abstract class BucketBasedAlgorithm<B extends Bucket, E extends Event> implement
     return result;
   }
 
-  void setSpliter(BucketSplitter<B, E> spliter) {
-    this.spliter = spliter;
+  void setSplitter(BucketSplitter<B, E> spliter) {
+    this.splitter = spliter;
   }
 
   void setBucketFactory(BucketFactory<B> factory) {

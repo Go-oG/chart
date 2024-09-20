@@ -1,7 +1,6 @@
-import 'package:e_downsample/src/impl/mm/piplot_bucket.dart';
-
-import '../../event.dart';
-import '../bucket_factory.dart';
+import '../../ds_algorithm.dart';
+import '../bucket.dart';
+import 'piplot_bucket.dart';
 
 class PIPlotBucketFactory implements BucketFactory<PIPlotBucket> {
   @override
@@ -15,7 +14,7 @@ class PIPlotBucketFactory implements BucketFactory<PIPlotBucket> {
   }
 
   @override
-  PIPlotBucket newBucketFromEvent(Event e) {
+  PIPlotBucket newBucketFromEvent(OrderData e) {
     return PIPlotBucket.of(e);
   }
 }

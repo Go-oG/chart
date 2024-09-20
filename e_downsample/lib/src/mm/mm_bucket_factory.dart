@@ -1,5 +1,5 @@
-import 'package:e_downsample/src/impl/bucket_factory.dart';
-import '../../event.dart';
+import '../../ds_algorithm.dart';
+import '../bucket.dart';
 import 'mm_bucket.dart';
 
 class MMBucketFactory implements BucketFactory<MMBucket> {
@@ -14,7 +14,7 @@ class MMBucketFactory implements BucketFactory<MMBucket> {
   }
 
   @override
-  MMBucket newBucketFromEvent(Event e) {
+  MMBucket newBucketFromEvent(OrderData e) {
     return MMBucket.of(e);
   }
 }

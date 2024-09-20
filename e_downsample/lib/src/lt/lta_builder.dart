@@ -1,5 +1,5 @@
 
-import '../fixed_num_bucket_splitter.dart';
+import '../bucket_splitter.dart';
 import '../weighted_event.dart';
 import 'lta_algorithm.dart';
 import 'ltd_dynamic_bucket_splitter.dart';
@@ -9,10 +9,10 @@ import 'ltweighted_bucket.dart';
 import 'ltweighted_bucket_factory.dart';
 
 class LTABuilder {
-  static final S_FIXED = FixedNumBucketSplitter<LTWeightedBucket, WeightedEvent>();
-  static final S_DYNAMIC = LTDynamicBucketSplitter();
-  static final ONE_BUCKET = LTOneBucketWeightCalculator();
-  static final THREE_BUCKET = LTThreeBucketWeightCalculator();
+  static final _sFixed = FixedNumBucketSplitter<LTWeightedBucket, WeightEvent>();
+  static final _sDynamic = LTDynamicBucketSplitter();
+  static final _oneBucket = LTOneBucketWeightCalculator();
+  static final _threeBucket = LTThreeBucketWeightCalculator();
 
   late final LTAlgorithm lta;
 
@@ -22,22 +22,22 @@ class LTABuilder {
   }
 
   LTABuilder fixed() {
-    lta.setSpliter(S_FIXED);
+    lta.setSplitter(_sFixed);
     return this;
   }
 
   LTABuilder dynamic() {
-    lta.setSpliter(S_DYNAMIC);
+    lta.setSplitter(_sDynamic);
     return this;
   }
 
   LTABuilder oneBucket() {
-    lta.wcalc = ONE_BUCKET;
+    lta.wcalc = _oneBucket;
     return this;
   }
 
   LTABuilder threeBucket() {
-    lta.wcalc = (THREE_BUCKET);
+    lta.wcalc = _threeBucket;
     return this;
   }
 

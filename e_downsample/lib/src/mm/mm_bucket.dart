@@ -1,29 +1,29 @@
 import 'package:meta/meta.dart';
 
-import '../../event.dart';
+import '../../ds_algorithm.dart';
 import '../bucket.dart';
 
 class MMBucket implements Bucket {
   @protected
-  List<Event> events = [];
+  List<OrderData> events = [];
 
   MMBucket();
 
-  MMBucket.of(Event e) {
+  MMBucket.of(OrderData e) {
     events.add(e);
   }
 
   @override
-  void selectInto(List<Event> result) {
+  void selectInto(List<OrderData> result) {
     if (events.length <= 1) {
       result.addAll(events);
       return;
     }
-    Event? maxEvt;
-    Event? minEvt;
+    OrderData? maxEvt;
+    OrderData? minEvt;
     double max = double.minPositive;
     double min = double.maxFinite;
-    for (Event e in events) {
+    for (OrderData e in events) {
       double val = e.getValue();
       if (val > max) {
         maxEvt = e;
@@ -35,7 +35,7 @@ class MMBucket implements Bucket {
       }
     }
     if (maxEvt != null && minEvt != null) {
-      bool maxFirst = maxEvt.getTime() < minEvt.getTime();
+      bool maxFirst = maxEvt.getOrder() < minEvt.getOrder();
       if (maxFirst) {
         result.add(maxEvt);
         result.add(minEvt);
@@ -51,7 +51,7 @@ class MMBucket implements Bucket {
   }
 
   @override
-  void add(Event e) {
+  void add(OrderData e) {
     events.add(e);
   }
 }

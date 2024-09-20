@@ -38,10 +38,10 @@ class LinkedBucketNode {
       return this;
     }
     LTWeightedBucket m = LTWeightedBucket.ofSize(value.size() + next.value.size());
-    for (WeightedEvent? e in value.events) {
+    for (WeightEvent? e in value.events) {
       m.add(e!);
     }
-    for (WeightedEvent? e in next.value.events) {
+    for (WeightEvent? e in next.value.events) {
       m.add(e!);
     }
     LinkedBucketNode n = LinkedBucketNode.of(m);
