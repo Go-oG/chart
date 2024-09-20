@@ -67,9 +67,13 @@ class EventType {
 
   //======组件相关事件==========
   ///框选组件相关事件
-  static const brushStart = EventType("brushStart");
-  static const brushUpdate = EventType("brushUpdate");
-  static const brushEnd = EventType("brushEnd");
+  static const brush = EventType("brush");
+  ///图例事件
+  static const legend = EventType("legend");
+  ///图例滚动事件
+  static const legendScroll = EventType("legendScroll");
+  static const tooltip = EventType("tooltip");
+
 
   ///坐标轴显示范围发生更改(其总范围不变)
   static const axisScroll = EventType("axisScroll");
@@ -78,20 +82,7 @@ class EventType {
   static const axisChange = EventType("axisChange");
   static const axisLabelClick = EventType("axisLabelClick");
 
-  ///图例滚动事件
-  static const legendScroll = EventType("legendScroll");
 
-  ///图例反选后的事件
-  static const legendInverseSelect = EventType("legendInverseSelect");
-
-  ///图例全选后的事件
-  static const legendSelectAll = EventType("legendSelectAll");
-
-  ///图例取消选中后的事件
-  static const legendUnSelect = EventType("legendUnSelect");
-
-  ///切换图例选中状态后的事件
-  static const legendSelectChanged = EventType("legendSelectChanged");
 
   ///平行坐标系选中事件
   static const parallelSelected = EventType("parallelSelected");
@@ -145,4 +136,10 @@ class EventType {
   bool operator ==(Object other) {
     return other is EventType && other.key == key;
   }
+}
+
+enum EventOrder {
+  start,
+  update,
+  end;
 }

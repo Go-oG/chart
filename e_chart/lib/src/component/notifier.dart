@@ -106,6 +106,17 @@ class ValueNotifier2<T> with Disposable {
 
   bool get hasListeners => _count > 0;
 
+  bool hasListener(VoidFun1<T> listener) {
+    for (var item in _listenerList) {
+      if (item == listener) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  List<VoidFun1<T>?> get listeners => _listenerList;
+
   @mustCallSuper
   @override
   void dispose() {
@@ -139,82 +150,37 @@ class ViewNotifier extends ValueNotifier2<Command> {
 }
 
 class BroadcastNotifier<T> {
-  final List<VoidFun1<T>?> _emptyList = List.empty();
-  late List<VoidFun1<T>?> _listenerList = _emptyList;
-  int _count = 0;
-  int _removeCount = 0;
-  int _notifyCount = 0;
+  final ValueNotifier2<_NeverEqual<T>> _notifier = ValueNotifier2(_NeverEqual._default());
+  final Map<VoidFun1<T>, ListenSubscription<T>> _map = {};
 
   ListenSubscription<T> listen(VoidFun1<T> listener) {
-    if (_count == _listenerList.length) {
-      if (_count == 0) {
-        _listenerList = List.filled(4, null);
-      } else {
-        final List<VoidFun1<T>?> newList = List.filled(_listenerList.length * 2, null);
-        for (int i = 0; i < _count; i++) {
-          newList[i] = _listenerList[i];
-        }
-        _listenerList = newList;
-      }
+    var ll = _map.remove(listener);
+    if (ll != null) {
+      _notifier.removeListener(ll._onCall);
     }
-    _listenerList[_count] = listener;
-    _count++;
-    return ListenSubscription(listener, this);
+    var result = ListenSubscription<T>._(listener, this);
+    _map[listener] = result;
+    _notifier.addListener(result._onCall);
+    return result;
   }
 
-  void _removeListener(VoidFun1<T>? listener) {
+  void _removeListener(VoidFun1<_NeverEqual<T>>? listener) {
     if (listener == null) {
       return;
     }
-    for (int i = 0; i < _count; i++) {
-      var v = _listenerList[i];
-      if (v == listener) {
-        _listenerList[i] = null;
-        _removeCount++;
-      }
-    }
+    _notifier.removeListener(listener);
   }
 
-  void update(T tmpValue) {
-    if (_count <= 0) {
-      _count = 0;
-      return;
+  void notify(T tmpValue) {
+    _notifier.value = _NeverEqual(tmpValue);
+  }
+
+  T? get value {
+    var data = _notifier.value;
+    if (data.defaultData) {
+      return null;
     }
-    _notifyCount++;
-    _listenerList.each((p0, p1) {
-      p0?.call(tmpValue);
-    });
-    _notifyCount--;
-    if (_notifyCount <= 0 && _removeCount > 0) {
-      final int newLength = _count - _removeCount;
-      if (newLength * 2 <= _listenerList.length) {
-        ///长度不满足则直接重新创建一个
-        final List<VoidFun1<T>?> newListeners = List<VoidFun1<T>?>.filled(newLength, null);
-        int newIndex = 0;
-        for (int i = 0; i < _count; i++) {
-          final VoidFun1<T>? listener = _listenerList[i];
-          if (listener != null) {
-            newListeners[newIndex++] = listener;
-          }
-        }
-        _listenerList = newListeners;
-      } else {
-        ///长度满足则直接进行移位操作(将右边的移动到左边)
-        for (int i = 0; i < newLength; i++) {
-          var c = _listenerList[i];
-          if (c == null) {
-            int swapIndex = i + 1;
-            while (swapIndex < _listenerList.length && _listenerList[swapIndex] == null) {
-              swapIndex += 1;
-            }
-            _listenerList[i] = _listenerList[swapIndex];
-            _listenerList[swapIndex] = null;
-          }
-        }
-      }
-      _removeCount = 0;
-      _count = newLength;
-    }
+    return data.data;
   }
 }
 
@@ -222,13 +188,46 @@ final class ListenSubscription<T> {
   VoidFun1<T>? _listener;
   BroadcastNotifier<T>? _notifier;
 
-  ListenSubscription(this._listener, this._notifier);
+  ListenSubscription._(this._listener, this._notifier);
 
-  void cancel() {
-    _notifier?._removeListener(_listener);
+  void _onCall(_NeverEqual<T> value) {
+    var data = value.data;
+    if (data != null && !value.defaultData) {
+      _listener?.call(data);
+    }
+  }
+
+  void dispose() {
+    _notifier?._removeListener(_onCall);
     _listener = null;
     _notifier = null;
   }
+
+  void notify(T? value) {
+    if (value == null) {
+      return;
+    }
+    _listener?.call(value);
+  }
+}
+
+final class _NeverEqual<T> {
+  final bool defaultData;
+  final T? data;
+
+  _NeverEqual(this.data) : defaultData = false;
+
+  _NeverEqual._default()
+      : data = null,
+        defaultData = true;
+
+  @override
+  bool operator ==(Object other) {
+    return false;
+  }
+
+  @override
+  int get hashCode => data == null ? super.hashCode : data.hashCode;
 }
 
 ///对图表命令的封装

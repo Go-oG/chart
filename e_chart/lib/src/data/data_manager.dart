@@ -240,15 +240,8 @@ final class DataManager extends Disposable {
     super.dispose();
     _nodeMap = {};
     _coordMap = {};
-
-    ///按照坐标域-geom进行数据分类
     _nodeCatMap = {};
-
-    ///存放轴的极值信息(需要注意层叠的情况(例如柱状图单个层叠))
     _extremeMap = {};
-
-    ///存放坐标轴的映射信息
-    ///<coordId>
     _axisScaleMap = {};
   }
 }

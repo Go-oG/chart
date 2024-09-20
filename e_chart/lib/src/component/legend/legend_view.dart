@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:e_chart/src/core/chart_scope.dart';
 import 'package:flutter/material.dart';
 
@@ -15,23 +13,21 @@ class LegendView extends StatefulWidget {
 }
 
 class LegendViewState extends State<LegendView> {
-  StreamSubscription<ChartOption>? _addSubscription;
+  ListenSubscription<ChartOption>? _addSubscription;
   final ValueNotifier<List<LegendItem>> _notifier = ValueNotifier([]);
+  final Map<LegendItem,bool> legendMap = {};
 
   @override
   void initState() {
     super.initState();
-    _addSubscription = chartScope.listenAddContext((op) {
+    _addSubscription = chartScope.listenContextAdd((op) {
       if (op == widget.option) {
         var chartContext = chartScope.getContext(op);
         if (chartContext == null) {
           return;
         }
         chartContext.addEventCall(EventType.legendScroll, _onLegendEvent);
-        chartContext.addEventCall(EventType.legendInverseSelect, _onLegendEvent);
-        chartContext.addEventCall(EventType.legendSelectAll, _onLegendEvent);
-        chartContext.addEventCall(EventType.legendUnSelect, _onLegendEvent);
-        chartContext.addEventCall(EventType.legendSelectChanged, _onLegendEvent);
+        chartContext.addEventCall(EventType.legend, _onLegendEvent);
       }
     });
   }
@@ -41,12 +37,9 @@ class LegendViewState extends State<LegendView> {
     _notifier.dispose();
     var context = chartScope.getContext(widget.option);
     context?.removeEventCall2(EventType.legendScroll, _onLegendEvent);
-    context?.removeEventCall2(EventType.legendInverseSelect, _onLegendEvent);
-    context?.removeEventCall2(EventType.legendSelectAll, _onLegendEvent);
-    context?.removeEventCall2(EventType.legendUnSelect, _onLegendEvent);
-    context?.removeEventCall2(EventType.legendSelectChanged, _onLegendEvent);
+    context?.removeEventCall2(EventType.legend, _onLegendEvent);
 
-    _addSubscription?.cancel();
+    _addSubscription?.dispose();
     _addSubscription = null;
     super.dispose();
   }
@@ -130,11 +123,12 @@ class LegendViewState extends State<LegendView> {
     if (legend == null || data == null) {
       return;
     }
-    if (!legend.allowSelectMulti && legendItem != null && legendItem.select) {
+    var select=legendMap[legendItem]??true;
+    if (!legend.allowSelectMulti && legendItem != null && select) {
       bool change = false;
       for (var item in data) {
-        if (item != legendItem && item.select) {
-          item.select = false;
+        if (item != legendItem && (legendMap[item]??true)) {
+          legendMap[item]=false;
           change = true;
         }
       }
@@ -148,9 +142,6 @@ class LegendViewState extends State<LegendView> {
     if (event is LegendScrollEvent) {
       return;
     }
-    if (event is LegendInverseSelectEvent) {}
-    if (event is LegendSelectAllEvent) {}
-    if (event is LegendSelectChangeEvent) {}
-    if (event is LegendUnSelectedEvent) {}
+    if (event is LegendEvent) {}
   }
 }

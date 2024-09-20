@@ -1,7 +1,5 @@
 import 'package:e_chart/e_chart.dart';
 
-import 'event_dispatcher.dart';
-
 abstract class ChartEvent {
   const ChartEvent();
 

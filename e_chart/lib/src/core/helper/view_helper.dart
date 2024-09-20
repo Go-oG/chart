@@ -80,39 +80,27 @@ mixin ViewHelper on GeomView {
   ///注册Brush组件 Event监听器
 
   void subscribeBrushEvent() {
-    context.addEventCall(EventType.brushUpdate, onBrushUpdate as VoidFun1<ChartEvent>);
+    context.addEventCall(EventType.brush, onBrushEvent as VoidFun1<ChartEvent>);
   }
 
   void unsubscribeBrushEvent() {
-    context.removeEventCall(onBrushUpdate as VoidFun1);
+    context.removeEventCall(onBrushEvent as VoidFun1);
   }
 
-  void onBrushUpdate(covariant BrushFilterEvent event) {}
+  void onBrushEvent(covariant BrushEvent event) {}
 
   /// 注册Legend组件事件
   void subscribeLegendEvent() {
     context.addEventCall(EventType.legendScroll, onLegendScroll as VoidFun1<ChartEvent>?);
-    context.addEventCall(EventType.legendInverseSelect, onLegendInverseSelect as VoidFun1<ChartEvent>?);
-    context.addEventCall(EventType.legendSelectAll, onLegendSelectedAll as VoidFun1<ChartEvent>?);
-    context.addEventCall(EventType.legendUnSelect, onLegendUnSelected as VoidFun1<ChartEvent>?);
-    context.addEventCall(EventType.legendSelectChanged, onLegendSelectChange as VoidFun1<ChartEvent>?);
+    context.addEventCall(EventType.legend, onLegendEvent as VoidFun1<ChartEvent>?);
   }
 
-  void onLegendInverseSelect(covariant LegendInverseSelectEvent event) {}
-
-  void onLegendSelectedAll(covariant LegendSelectAllEvent event) {}
-
-  void onLegendUnSelected(covariant LegendUnSelectedEvent event) {}
-
-  void onLegendSelectChange(covariant LegendSelectChangeEvent event) {}
+  void onLegendEvent(covariant LegendEvent event) {}
 
   void onLegendScroll(covariant LegendScrollEvent event) {}
 
   void unsubscribeLegendEvent() {
-    context.removeEventCall(onLegendInverseSelect as VoidFun1<ChartEvent>?);
-    context.removeEventCall(onLegendSelectedAll as VoidFun1<ChartEvent>?);
-    context.removeEventCall(onLegendUnSelected as VoidFun1<ChartEvent>?);
-    context.removeEventCall(onLegendSelectChange as VoidFun1<ChartEvent>?);
+    context.removeEventCall(onLegendEvent as VoidFun1<ChartEvent>?);
     context.removeEventCall(onLegendScroll as VoidFun1<ChartEvent>?);
   }
 

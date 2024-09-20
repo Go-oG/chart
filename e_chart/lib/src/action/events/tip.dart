@@ -1,5 +1,14 @@
-///提示缩略文本
-class PopTipEvent {}
+import 'dart:ui';
 
-///提示ToolTip
-class ToolTip {}
+import 'package:e_chart/e_chart.dart';
+
+///ToolTip
+class ToolTipEvent extends ChartEvent {
+  final Rect position;
+  final EventOrder order;
+
+  ToolTipEvent(this.position, this.order);
+
+  @override
+  EventType get eventType => EventType.tooltip;
+}

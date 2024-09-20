@@ -42,6 +42,5 @@ class MenuItem {
   static final MenuItem empty = MenuItem(DynamicText.empty);
   final DynamicText title;
   final DynamicText? desc;
-
   const MenuItem(this.title, [this.desc]);
 }

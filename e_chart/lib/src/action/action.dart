@@ -1,4 +1,5 @@
 class ChartAction {
   final bool fromUser;
-  ChartAction({this.fromUser = false});
+
+  const ChartAction({this.fromUser = false});
 }

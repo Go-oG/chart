@@ -1,5 +1,4 @@
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/core/chart_scope.dart';
 import 'package:flutter/widgets.dart';
 import 'package:e_chart/src/action/action_dispatcher.dart' as ac;
 
@@ -50,7 +49,6 @@ class Context with Disposable {
 
     viewManager = ViewManager();
     viewManager.parse(this, option);
-    chartScope.addContext(this);
   }
 
   ///更新TickerProvider
@@ -85,8 +83,7 @@ class Context with Disposable {
 
   @override
   void dispose() {
-    chartScope.remove(option);
-    chartScope.remove2(this);
+    super.dispose();
     tooltipNotifier.dispose();
     viewManager.dispose();
     dataManager.dispose();
@@ -96,7 +93,6 @@ class Context with Disposable {
     _gestureDispatcher.dispose();
     _option = null;
     _provider = null;
-    super.dispose();
   }
 
   ///=======手势监听处理===============

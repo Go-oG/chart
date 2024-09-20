@@ -26,6 +26,7 @@ class ToolTipView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             buildTitle(context, menu.title, menu.titleStyle),
+            ...buildItemList(tooltip, menu.itemList)
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/chart_scope.dart';
 import 'package:e_chart/src/core/widget_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -30,8 +31,7 @@ final class RenderRoot extends RenderBox implements ViewParent {
   ) {
     attachInfo = AttachInfo(this);
     var dp = WidgetsBinding.instance.platformDispatcher.displays.first.devicePixelRatio;
-    _context = Context(option, provider, dp);
-
+    _context =chartScope.getOrCreateContext(option, provider, dp);
     _context?.tooltipNotifier.addListener((v) {
       widgetAdapter.toolTipNotifier.value = v;
     });

@@ -8,7 +8,6 @@ class LegendItem {
   final CShape symbol;
   final double gap;
   final LabelStyle? textStyle;
-  bool select = true;
 
   LegendItem(
     this.name,

@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
+import 'package:flutter/widgets.dart';
 
 final chartScope = ChartScope._();
 
@@ -16,12 +14,36 @@ class ChartScope {
 
   final BroadcastNotifier<ChartOption> _removeNotifier = BroadcastNotifier();
 
-  ListenSubscription<ChartOption> listenAddContext(VoidFun1<ChartOption> listener) {
-   return _addNotifier.listen(listener);
+  ListenSubscription<ChartOption> listenContextAdd(VoidFun1<ChartOption> listener) {
+    var result = _addNotifier.listen(listener);
+    Set<ChartOption> keySets = _contexts.keys.toSet();
+    for (var item in keySets) {
+      result.notify(item);
+    }
+    return result;
   }
 
-  ListenSubscription<ChartOption> listenRemoveContext(VoidFun1<ChartOption> listener) {
-    return _removeNotifier.listen(listener);
+  ListenSubscription<ChartOption> listenContextRemoved(VoidFun1<ChartOption> listener) {
+    var res = _removeNotifier.listen(listener);
+    return res;
+  }
+
+  Context getOrCreateContext(ChartOption option, TickerProvider provider, double dp) {
+    var context = getContext(option);
+    if (context != null) {
+      return context;
+    }
+    context = Context(option, provider, dp);
+    Context tmp = context;
+    context.addDisposeListener(() {
+      remove2(tmp);
+    });
+    addContext(context);
+    return context;
+  }
+
+  Context? getContext(ChartOption option) {
+    return _contexts[option];
   }
 
   void addContext(Context? context) {
@@ -31,17 +53,13 @@ class ChartScope {
     var old = _contexts[context.option];
     if (old == null) {
       _contexts[context.option] = context;
-      _addNotifier.update(context.option);
+      _addNotifier.notify(context.option);
     }
-  }
-
-  Context? getContext(ChartOption option) {
-    return _contexts[option];
   }
 
   void remove(ChartOption option) {
     if (_contexts.remove(option) != null) {
-      _removeNotifier.update(option);
+      _removeNotifier.notify(option);
     }
   }
 
@@ -55,7 +73,7 @@ class ChartScope {
       return result;
     });
     if (change) {
-      _removeNotifier.update(context.option);
+      _removeNotifier.notify(context.option);
     }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:e_chart/e_chart.dart';
-import '../event.dart';
-import '../event_dispatcher.dart';
+
 class ViewScaleEvent extends ChartEvent {
   Geom? _geom;
 

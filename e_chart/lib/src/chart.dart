@@ -1,4 +1,5 @@
 import 'package:e_chart/e_chart.dart';
+import 'package:e_chart/src/core/chart_scope.dart';
 import 'package:flutter/foundation.dart';
 
 ///表格的通用配置
@@ -79,6 +80,10 @@ class ChartOption {
       ...calendarList,
       ...parallelList,
     ];
+  }
+
+  Context? get context {
+    return chartScope.getContext(this);
   }
 
   @override

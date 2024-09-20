@@ -11,11 +11,11 @@ class BrushView extends GestureView {
 
   Brush get brush => _brush!;
   List<BrushArea> _brushList = [];
-  late final BrushFilterEvent _updateEvent;
+  late final BrushEvent _updateEvent;
 
   BrushView(super.context, this._coord, this._brush) {
     layoutParams = LayoutParams.matchAll();
-    // _updateEvent = BrushFilterEvent(coord.props.id,[]);
+    _updateEvent = BrushEvent(EventOrder.update, coord.option.id, brush, []);
   }
 
   @override
@@ -45,18 +45,6 @@ class BrushView extends GestureView {
     //   return;
     // }
   }
-
-  @override
-  bool get enableLongPress => true;
-
-  @override
-  bool get enableClick => true;
-
-  @override
-  bool get enableScale => false;
-
-  @override
-  bool get enableHover => false;
 
   bool _handleAction(ChartAction action) {
     if (!brush.enable) {
