@@ -45,8 +45,10 @@ final class Attrs {
   }
 
   Offset? getCenter([Offset? defaultValue]) {
+
     return getOffset() ?? defaultValue;
   }
+
 
   Offset? getOffset() {
     var data = getList([Attr.x, Attr.y]);
@@ -73,7 +75,7 @@ final class Attrs {
     return defaultValue;
   }
 
-  double getRadius([num defaultValue = 0]) {
+  double? getRadius([num defaultValue = 0]) {
     var radius = getNum([Attr.outRadius], -1);
     if (radius >= 0) {
       return radius.toDouble();
@@ -187,6 +189,7 @@ final class Attr {
   static const Attr rotation = Attr("rotation");
 
   static const Attr offset = Attr("offset");
+  static const Attr center = Attr("center");
   static const Attr angleOffset = Attr("angleOffset");
   static const Attr inside = Attr("inside");
   static const Attr count = Attr("count");

@@ -291,7 +291,7 @@ class AngleAxisView extends AxisView<AngleAxis, AngleAxisAttrs, PolarCoord> {
       _axisPointerTD.text = dt;
       _axisPointerTD.style = axisPointer.labelStyle;
       _axisPointerTD.pointAlign = toAlignment(angle, axis.axisLabel.inside);
-      _axisPointerTD.update();
+      _axisPointerTD.markDirty();
     }
     _axisPointerTD.draw(canvas, paint);
   }

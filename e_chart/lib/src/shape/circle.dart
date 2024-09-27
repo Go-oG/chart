@@ -39,7 +39,7 @@ class Circle extends CShape {
   void fill(Attrs attr) {}
 }
 
-CShape circleShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
+CShape? circleShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
   if (value is RectLayoutResult) {
     return Circle(center: Offset(value.centerX, value.centerY), radius: value.minSide / 2);
   }
@@ -56,5 +56,5 @@ CShape circleShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
     return Circle(center: circlePoint(value.outRadius, value.startAngle, value.center), radius: size.shortestSide / 2);
   }
 
-  return EmptyShape();
+  return null;
 }

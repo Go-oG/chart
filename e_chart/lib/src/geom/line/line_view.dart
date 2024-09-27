@@ -4,15 +4,8 @@ import 'package:e_chart/e_chart.dart';
 
 ///线条视图
 ///通常会进行排序等操作
-class LineView extends BasePointView<LineGeom> {
+class LineView extends PointView<LineGeom> {
   LineView(super.context, super.series);
-
-  List<Pair<Line, List<DataNode>>> lineList = [];
-
-  @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    // TODO: implement onLayoutPositionAndSize
-  }
 
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
@@ -23,7 +16,7 @@ class LineView extends BasePointView<LineGeom> {
   }
 
   @override
-  Attrs onAnimateLerpStar(DataNode node, DiffType type) {
+  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     var attr = node.pickXY();
     if (type == DiffType.add) {
       attr[Attr.y] = height;
@@ -32,7 +25,7 @@ class LineView extends BasePointView<LineGeom> {
   }
 
   @override
-  Attrs onAnimateLerpEnd(DataNode node, DiffType type) {
+  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
     var attr = node.pickXY();
     if (type == DiffType.remove) {
       attr[Attr.y] = height * 2;
@@ -54,34 +47,27 @@ class LineView extends BasePointView<LineGeom> {
 
   @override
   void onDraw(Canvas2 canvas) {
-    var style = const LineStyle();
-    var fillStyle = const AreaStyle();
-    for (var pair in lineList) {
-      style.drawPath(canvas, mPaint, pair.first.path, pair.first.bound);
+    for (var shape in combineShapeList) {
+      shape.style.render(canvas, mPaint, shape.shape);
     }
-
-    for (var pair in lineList) {
-      for (var node in pair.second) {
-        node.shape.render(canvas, mPaint, fillStyle);
-      }
-    }
+    super.onDraw(canvas);
   }
 
   void mergeLine(List<DataNode> nodeList) {
-    List<Pair<Line, List<DataNode>>> lineList = [];
+    List<CombineShape> shapeList = [];
     List<List<DataNode>> groupList = groupByGroupId(nodeList);
     var step = geom.lineType;
     for (var list in groupList) {
       List<Offset> offsetList = List.from(list.map((e) => Offset(e.x, e.y)));
-
       if (step != null) {
         offsetList = Line.step2(offsetList, step);
       }
-
       var line =
           Line(offsetList, smooth: (step == null ? geom.smooth : 0), dashList: geom.dashList, disDiff: geom.disDiff);
-      lineList.add(Pair(line, list));
+
+      ///TODO 样式应该需要更改
+      shapeList.add(CombineShape(list.first.style.copy(), line, list));
     }
-    this.lineList = lineList;
+    combineShapeList = shapeList;
   }
 }

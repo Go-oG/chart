@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 /// 矩形树图
-class TreeMapView extends GeomView<TreeMapGeom> {
+class TreeMapView extends AnimateGeomView<TreeMapGeom> {
   TreeMapView(super.context, super.geom);
   TreeNode? rootNode;
 

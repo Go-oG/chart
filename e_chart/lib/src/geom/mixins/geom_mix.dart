@@ -8,7 +8,7 @@ mixin GeomMix {
   final List<PosMap> _posList = [];
 
   PosMap pos(Dim dim) {
-    return _posMap[dim]!;
+    return posNull(dim)!;
   }
 
   PosMap? posNull(Dim dim) {
@@ -107,6 +107,7 @@ mixin GeomMix {
     }
     return shapeFactory.build(node, shapeAttrs, shapeType);
   }
+
 }
 
 ///负责存储位置映射关系
@@ -116,10 +117,6 @@ class PosMap {
   final String field;
 
   const PosMap(this.field, this.dimIndex, this.dim);
-
-  AxisDim toAxisDim() {
-    return AxisDim.of(dim, dimIndex);
-  }
 
   AxisDim get axisDim {
     return AxisDim.of(dim, dimIndex);

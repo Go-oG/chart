@@ -1,6 +1,6 @@
 import 'package:e_chart/e_chart.dart';
 
-class GraphView extends GeomView<GraphSeries> {
+class GraphView extends AnimateGeomView<GraphSeries> {
   GraphView(super.context, super.series);
   List<Edge> edgeList = [];
 
@@ -25,6 +25,5 @@ class GraphView extends GeomView<GraphSeries> {
 
   @override
   void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    // TODO: implement onLayoutPositionAndSize
   }
 }

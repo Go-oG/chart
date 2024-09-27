@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///具备层次结构的视图
 ///但该视图只能进行简单的动画
-class TreeView extends GeomView<TreeGeom> {
+class TreeView extends AnimateGeomView<TreeGeom> {
   TreeNode? rootNode;
 
   Map<TreeNode, List<TreeNode>> _childMap = {};

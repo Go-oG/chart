@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-typedef ShapeBuilder = CShape Function(LayoutResult value, Size size, Attrs attrs);
+typedef ShapeBuilder = CShape? Function(LayoutResult value, Size size, Attrs attrs);
 
 final shapeFactory = ShapeFactory._();
 
@@ -30,7 +30,7 @@ final class ShapeFactory {
     if (builder == null) {
       return EmptyShape();
     }
-    return builder(node.layoutValue, node.size, attrs ?? Attrs.empty);
+    return builder(node.layoutResult, node.size, attrs ?? Attrs.empty)??EmptyShape.none;
   }
 
   static PathShape buildBoxplot(List<double> xList, List<double> yList) {

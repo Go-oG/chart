@@ -1,7 +1,43 @@
+import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
-abstract class BasePointView<T extends Geom> extends GeomView<T> {
+abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
   BasePointView(super.context, super.series);
+
+  @override
+  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+    var coord = findCoordView();
+    if (coord == null) {
+      return;
+    }
+    for (var node in nodeList) {
+      var layoutResult=layoutSingleNode(coord, node);
+      var size=layoutSingleNodeSize(coord, node);
+      node.layoutResult = layoutResult;
+      node.size =size;
+    }
+  }
+
+  @override
+  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
+    if (isIntercept) {
+      return;
+    }
+    //构建Shape
+    for (var node in nodeList) {
+      node.shape = geom.pickShape(node);
+    }
+  }
+
+  LayoutResult layoutSingleNode(CoordView coord, DataNode node);
+
+  Size layoutSingleNodeSize(CoordView coord, DataNode node);
+
+  @override
+  void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {
+    node.fillFromAttr(s.lerp(e, t));
+  }
 
   @override
   void onClickAfter(DataNode? now, DataNode? old) {
@@ -37,4 +73,7 @@ abstract class BasePointView<T extends Geom> extends GeomView<T> {
     //   t.start(context, true);
     // }
   }
+
+
 }
+

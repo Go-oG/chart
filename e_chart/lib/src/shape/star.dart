@@ -107,7 +107,7 @@ class Star extends CShape {
   }
 }
 
-CShape starShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
+CShape? starShapeBuilder(LayoutResult value,Size size, Attrs attrs) {
   var count = attrs.getInt([Attr.count], 5);
   var or = attrs.getDouble([Attr.outRadius], size.shortestSide / 2);
   var ir = attrs.getDouble([Attr.innerRadius], 0);
@@ -157,5 +157,5 @@ CShape starShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
       angleOffset: off,
     );
   }
-  return EmptyShape();
+  return null;
 }

@@ -143,39 +143,27 @@ class RawData {
 
 ///对原始数据的封装
 class DataNode extends Disposable with StateMix, NodePropsMix {
-  ///原始数据
-  final RawData data;
+  late final _RawDataMap _data;
 
   ///该节点所属的Geom
   Geom geom;
-
   ///全局索引
   int globalIndex = -1;
-
   ///数据索引
   int dataIndex = 0;
-
   ///优先级
   int priority;
 
-  ///===============布局和绘制使用的属性==================
-  Map<Dim, dynamic> _rawDataMap = {};
-
-  ///存储布局结果
-  LayoutResult layoutValue = const LayoutResult();
+  ///==============节点形状和样式====================
+  LayoutResult layoutResult=const LayoutResult();
+  /// 形状由布局确定(实际确定了shape)
   CShape shape = EmptyShape.none;
-  AreaStyle fillStyle = AreaStyle.empty;
-  LineStyle sideStyle = LineStyle.empty;
+  final NodeStyle style = NodeStyle();
+
   Text2? label;
 
-  DataNode(
-    this.geom,
-    this.data, {
-    double? value,
-    this.priority = 0,
-    int? index,
-    int? deep,
-  }) {
+  DataNode(this.geom, RawData data, {double? value, this.priority = 0, int? index, int? deep}) {
+    _data = _RawDataMap(data);
     if (index != null) {
       this.index = index;
     }
@@ -185,33 +173,13 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
     if (value != null) {
       this.value = value;
     }
-    each(geom.allPos, (p0, p1) {
-      _rawDataMap[p0.dim] = data.get2(p0.field);
-    });
   }
 
-  dynamic getRawData(Dim dim) {
-    return _rawDataMap[dim];
-  }
+  dynamic getRawData(Dim dim) => _data.getRawData(geom, dim);
 
-  void updateRawData(Dim dim, dynamic data) {
-    _rawDataMap[dim] = data;
-  }
+  void setMapData(Dim dim, dynamic data) => _data.setMapData(dim, data);
 
-  void resetRawData() {
-    Map<Dim, dynamic> dm = {};
-    each(geom.allPos, (p0, p1) {
-      dm[p0.dim] = data.get2(p0.field);
-    });
-    _rawDataMap = dm;
-  }
-
-  ///辅助属性
-  String get id => data.id;
-
-  String get groupId => data.groupId ?? id;
-
-  String getGroupCategory([Dim dim = Dim.x]) {
+  String groupCategory([Dim dim = Dim.x]) {
     var raw = getRawData(dim);
     if (raw == null) {
       return "";
@@ -219,7 +187,7 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
     return raw.toString();
   }
 
-  String getStackId([Fun2<DataNode, String?>? stackIdFun]) {
+  String stackId([Fun2<DataNode, String?>? stackIdFun]) {
     String? id = stackIdFun?.call(this);
     if (id == null || id.isEmpty) {
       id = data.get2("stackId");
@@ -231,8 +199,7 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
   }
 
   void render(Canvas2 canvas, Paint paint) {
-    shape.render(canvas, paint, fillStyle);
-    shape.render(canvas, paint, sideStyle);
+    style.render(canvas, paint, shape);
     label?.render(canvas, paint, LineStyle.empty);
   }
 
@@ -266,20 +233,15 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
   }
 
   void updateStyle(Context context) {
-    fillStyle = geom.pickFillStyle(this, 1);
-    sideStyle = geom.pickSideStyle(this, 1);
+    style.fill(geom.pickFillStyle(this, 1), geom.pickSideStyle(this, 1));
     label?.style = geom.pickLabelStyle(this);
-    label?.update();
+    label?.markDirty();
   }
 
   void sendStateChangeEvent(Context context) {
     if (context.hasEventListener(EventType.dataStatusChanged)) {
       context.dispatchEvent(DataStatusChangeEvent(data, status));
     }
-  }
-
-  Pair<CShape, CStyle> pickStyle() {
-    return Pair(shape, fillStyle);
   }
 
   @override
@@ -289,13 +251,12 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
     label = null;
   }
 
-  @override
-  int get hashCode => id.hashCode;
+  RawData get data => _data.data;
 
-  @override
-  bool operator ==(Object other) {
-    return other is DataNode && other.id == id;
-  }
+  ///辅助属性
+  String get id => data.id;
+
+  String get groupId => data.groupId ?? id;
 
   ///固定的值访问
   double? get fx => data.getAttr2(Attr.fx);
@@ -315,4 +276,70 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
   String get coordId => geom.coordId;
 
   GeomType get geomType => geom.geomType;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is DataNode && other.id == id;
+  }
+}
+
+final class _RawDataMap {
+  final RawData data;
+  Map<Dim, dynamic> _mapMap = {};
+
+  _RawDataMap(this.data);
+
+  dynamic getRawData(Geom geom, Dim dim) {
+    return data.get2(geom.pos(dim).field);
+  }
+
+  dynamic getMapData(Dim dim) {
+    return _mapMap[dim];
+  }
+
+  void setMapData(Dim dim, dynamic data) {
+    _mapMap[dim] = data;
+  }
+
+  void clearMapData() {
+    _mapMap = {};
+  }
+
+
+}
+
+final class NodeStyle {
+  AreaStyle? fillStyle;
+  LineStyle? sideStyle;
+  LabelStyle? labelStyle;
+
+  NodeStyle({this.sideStyle, this.fillStyle, this.labelStyle});
+
+  void fill(AreaStyle? fillStyle, LineStyle? sideStyle) {
+    this.fillStyle = fillStyle;
+    this.sideStyle = sideStyle;
+  }
+
+  void render(Canvas2 canvas, Paint paint, CShape shape) {
+    var fs = fillStyle;
+    if (fs != null) {
+      shape.render(canvas, paint, fs);
+    }
+    var ss = sideStyle;
+    if (ss != null) {
+      shape.render(canvas, paint, ss);
+    }
+  }
+
+  void dispose() {
+    fillStyle = null;
+    sideStyle = null;
+  }
+
+  NodeStyle copy(){
+    return NodeStyle(sideStyle: sideStyle,fillStyle: fillStyle);
+  }
 }

@@ -3,25 +3,30 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///Area类型
-class AreaView extends BasePointView<AreaSeries> {
+class AreaView extends PointView<AreaGeom> {
   AreaView(super.context, super.series);
 
   Map<Area, List<DataNode>> areaMap = {};
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    // TODO: implement onLayoutPositionAndSize
+  LayoutResult layoutSingleNode(CoordView<Coord> coord, DataNode node) {
+    throw UnimplementedError();
   }
 
   @override
-  Attrs onAnimateLerpStar(DataNode node, DiffType type) {
+  Size layoutSingleNodeSize(CoordView<Coord> coord, DataNode node) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     var map = node.pickXY();
     map[Attr.scale] = type == DiffType.add ? 0 : 1;
     return map;
   }
 
   @override
-  Attrs onAnimateLerpEnd(DataNode node, DiffType type) {
+  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
     var attr = node.pickXY();
     attr[Attr.scale] = type == DiffType.remove ? 0 : 1;
     return attr;
@@ -82,4 +87,6 @@ class AreaView extends BasePointView<AreaSeries> {
       }
     }
   }
+
+
 }

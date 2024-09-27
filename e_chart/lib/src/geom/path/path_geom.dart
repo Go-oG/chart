@@ -1,7 +1,7 @@
 import '../../../e_chart.dart';
 
 ///直线
-class PathGeom extends Geom {
+class PathGeom extends PointGeom {
   double smooth = 0;
   List<double>? dashList;
 
@@ -10,6 +10,9 @@ class PathGeom extends Geom {
   PathGeom(
     super.dataSet,
     super.scope, {
+    this.smooth = 0,
+    this.dashList,
+    this.disDiff = 2,
     super.animation,
     super.backgroundColor,
     super.clip,

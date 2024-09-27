@@ -36,7 +36,7 @@ class Prism extends CShape {
   void fill(Attrs attr) {}
 }
 
-CShape prismShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
+CShape? prismShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
   if (value is RectLayoutResult) {
     return Prism(
       center: Offset(value.centerX, value.centerY),
@@ -65,5 +65,5 @@ CShape prismShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
       height: size.height,
     );
   }
-  return EmptyShape();
+  return null;
 }

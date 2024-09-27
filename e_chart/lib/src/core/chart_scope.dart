@@ -36,9 +36,9 @@ class ChartScope {
     context = Context(option, provider, dp);
     Context tmp = context;
     context.addDisposeListener(() {
-      remove2(tmp);
+      _remove2(tmp);
     });
-    addContext(context);
+    _addContext(context);
     return context;
   }
 
@@ -46,7 +46,7 @@ class ChartScope {
     return _contexts[option];
   }
 
-  void addContext(Context? context) {
+  void _addContext(Context? context) {
     if (context == null) {
       return;
     }
@@ -57,13 +57,13 @@ class ChartScope {
     }
   }
 
-  void remove(ChartOption option) {
+  void _remove(ChartOption option) {
     if (_contexts.remove(option) != null) {
       _removeNotifier.notify(option);
     }
   }
 
-  void remove2(Context context) {
+  void _remove2(Context context) {
     bool change = false;
     _contexts.removeWhere((k, v) {
       var result = v == context;

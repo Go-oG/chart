@@ -85,7 +85,7 @@ class Text2 extends CShape with Drawable {
 
   ///当更改了一个属性后必须调用该方法重新计算
   @override
-  void update() {
+  void markDirty() {
     _painter = null;
     _boxPainter = decoration?.createBoxPainter(() {
       //TODO 应该重绘
@@ -135,7 +135,7 @@ class Text2 extends CShape with Drawable {
     }
 
     if (change) {
-      update();
+      markDirty();
     }
   }
 

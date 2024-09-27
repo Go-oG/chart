@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-///用于帮助实现数据映射视图
-mixin ViewEventMix on ChartView {
+///用于帮助实现视图节点相关事件
+mixin ViewNodeEventMix on ChartView {
   void sendClickEvent(DataNode node, Offset local, Offset global) {
     if (context.hasEventListener(EventType.click)) {
       var event = ClickEvent(local, global, buildEvent(node));

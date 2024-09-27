@@ -56,7 +56,7 @@ class CRect extends CShape {
   void fill(Attrs attr) {}
 }
 
-CShape rectShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
+CShape? rectShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
   Corner corner = Corner.fromAttr(attrs);
   if (value is RectLayoutResult) {
     return CRect(left: value.left, top: value.top, right: value.right, bottom: value.bottom, corner: corner);
@@ -82,5 +82,5 @@ CShape rectShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
       height: size.height,
     );
   }
-  return EmptyShape();
+  return null;
 }

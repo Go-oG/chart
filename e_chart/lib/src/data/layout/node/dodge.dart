@@ -38,7 +38,7 @@ abstract class Dodge extends ChartTransform {
     var groupNode = GroupNode("ttt");
     List<ColumnNode> columnList = [];
     for (var node in nodeList) {
-      var stackId = node.getStackId(stackIdFun);
+      var stackId = node.stackId(stackIdFun);
       int index = columnList.indexWhere((element) => element.stackId == stackId);
       ColumnNode columnNode;
       if (index < 0) {

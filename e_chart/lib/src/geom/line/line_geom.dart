@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///直线
-class LineGeom extends Geom {
+class LineGeom extends PointGeom {
   double smooth = 0;
   List<double>? dashList;
   double disDiff = 2;
@@ -21,6 +21,7 @@ class LineGeom extends Geom {
 
   @override
   GeomType get geomType => GeomType.line;
+
   @override
   ChartView? toView(Context context) {
     return LineView(context, this);

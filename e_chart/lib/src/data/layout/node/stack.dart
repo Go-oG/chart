@@ -19,10 +19,10 @@ abstract class BaseStack extends ChartTransform {
   void onAfterConvertRawData(Geom geom, List<DataNode> nodeList) {
     Map<String, GroupNode> groupMap = {};
     for (var node in nodeList) {
-      var cat = node.getGroupCategory(stackDim.invert);
+      var cat = node.groupCategory(stackDim.invert);
       var groupNode = groupMap[cat] ?? GroupNode(cat);
       groupMap[cat] = groupNode;
-      groupNode.add(node.getStackId(stackIdFun), node);
+      groupNode.add(node.stackId(stackIdFun), node);
     }
     for (var groupNode in groupMap.values) {
       for (var col in groupNode.columns.values) {
@@ -45,10 +45,10 @@ abstract class BaseStack extends ChartTransform {
       var node = dataList.first;
       var raw = node.getRawData(stackDim);
       if (raw == null || (raw is List && raw.isEmpty)) {
-        node.updateRawData(dim, [0, 0]);
+        node.setMapData(dim, [0, 0]);
         return;
       }
-      node.updateRawData(dim, [0, 100]);
+      node.setMapData(dim, [0, 100]);
       return;
     }
 
@@ -138,7 +138,7 @@ abstract class BaseStack extends ChartTransform {
         var raw = part as num;
         dl.add(up + raw - minV);
       }
-      node.updateRawData(stackDim, dl);
+      node.setMapData(stackDim, dl);
       up = up + statistics.max - minV;
     });
   }
@@ -166,7 +166,7 @@ abstract class BaseStack extends ChartTransform {
         var raw = part as num;
         dl.add(down - (raw - minV));
       }
-      node.updateRawData(stackDim, dl);
+      node.setMapData(stackDim, dl);
       down = down - (statistics.max - minV);
     });
   }
@@ -195,7 +195,7 @@ abstract class BaseStack extends ChartTransform {
         var dir = vv >= 0 ? 1 : -1;
         dl.add(100 * dir * (vv - minValue) / range);
       }
-      node.updateRawData(stackDim, dl);
+      node.setMapData(stackDim, dl);
     }
   }
 

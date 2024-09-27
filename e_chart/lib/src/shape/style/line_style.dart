@@ -259,11 +259,6 @@ class LineStyle extends CStyle {
     return lerp(this, end, t);
   }
 
-  @override
-  CStyle lerpFrom(covariant LineStyle? start, double t) {
-    return lerp(start, this, t);
-  }
-
   static LineStyle lerp(LineStyle? start, LineStyle? end, double t) {
     if (start == null && end == null) {
       return LineStyle.empty;

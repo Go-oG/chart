@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 
 ///用于辅助布局相关的抽象类，通常和GeomView 配合使用
 ///其包含了Chart事件分发、处理以及手势等相关处理
-mixin ViewHelper on GeomView {
+mixin ViewHelper on AnimateGeomView {
   ///标识是否在运行动画
 
   ///控制在动画期间是否允许手势

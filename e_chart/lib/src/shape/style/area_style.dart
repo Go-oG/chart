@@ -238,11 +238,6 @@ class AreaStyle extends CStyle {
   }
 
   @override
-  CStyle lerpFrom(covariant CStyle? start, double t) {
-    throw UnimplementedError();
-  }
-
-  @override
   void drawArc2(Canvas2 canvas, Paint paint, num radius, num startAngle, num sweepAngle,
       [Offset center = Offset.zero]) {}
 

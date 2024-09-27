@@ -398,7 +398,7 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
       _axisPointerTD.style = axisPointer.labelStyle;
       _axisPointerTD.alignPoint = tmp;
       _axisPointerTD.pointAlign = alignment;
-      _axisPointerTD.update();
+      _axisPointerTD.markDirty();
     }
     _axisPointerTD.draw(canvas, paint);
     canvas.restore();

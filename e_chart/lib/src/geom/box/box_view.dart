@@ -1,13 +1,13 @@
 import 'package:e_chart/e_chart.dart';
 
 ///只能按照分组进行布局
-class BoxView extends GeomView<BoxGeom> {
+class BoxView extends AnimateGeomView<BoxGeom> {
   BoxView(super.context, super.geom);
 
   @override
   void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    var dimX = geom.xPos.toAxisDim();
-    var dimY = geom.yPos.toAxisDim();
+    var dimX = geom.xPos.axisDim;
+    var dimY = geom.yPos.axisDim;
     var coord = geom.findCoord(context);
     if (coord == null) {
       return;

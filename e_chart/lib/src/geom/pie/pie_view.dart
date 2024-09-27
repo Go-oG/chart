@@ -76,7 +76,7 @@ class PieView extends BasePointView<PieGeom> {
   }
 
   @override
-  Attrs onAnimateLerpStar(DataNode node, DiffType type) {
+  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     var style = geom.animatorStyle;
     var attr = node.pickArc();
     if (type == DiffType.remove || type == DiffType.update) {
@@ -94,7 +94,7 @@ class PieView extends BasePointView<PieGeom> {
   }
 
   @override
-  Attrs onAnimateLerpEnd(DataNode node, DiffType type) {
+  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
     var attr = node.pickArc();
     if (type == DiffType.add || type == DiffType.update) {
       return attr;
@@ -286,5 +286,17 @@ class PieView extends BasePointView<PieGeom> {
             () {})
         .first
         .start(context);
+  }
+
+  @override
+  LayoutResult layoutSingleNode(CoordView<Coord> coord, DataNode node) {
+    // TODO: implement layoutSingleNode
+    throw UnimplementedError();
+  }
+
+  @override
+  Size layoutSingleNodeSize(CoordView<Coord> coord, DataNode node) {
+    // TODO: implement layoutSingleNodeSize
+    throw UnimplementedError();
   }
 }

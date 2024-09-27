@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 
 class LabelStyle extends CStyle {
   static const LabelStyle empty = LabelStyle(show: false);

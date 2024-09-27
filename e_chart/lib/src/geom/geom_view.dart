@@ -7,12 +7,12 @@ import 'package:flutter/rendering.dart';
 
 ///基础的GeomView
 ///主要负责管理和更新数据节点
-abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMix {
+abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMix {
   T? _geom;
 
   T get geom => _geom!;
 
-  BaseGeomView(super.context, T geom) {
+  GeomView(super.context, T geom) {
     _geom = geom;
     layoutParams = geom.layoutParams;
   }
@@ -21,7 +21,7 @@ abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMi
   @protected
   final ViewNotifier viewNotifier = ViewNotifier();
 
-  ///存储当前所有节点的分布情况
+  ///存储当前所有节点的分布情况，使用RTree来加快节点搜索和访问
   @protected
   late final RBush<DataNode> rBush = RBush(
     (p0) => getNodeBound(p0).left,
@@ -30,7 +30,7 @@ abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMi
     (p0) => getNodeBound(p0).bottom,
   );
 
-  ///存储复合shape例如 line path等需要多个数据共同构建的的CShape
+  ///存储复合shape，例如 line path等需要多个数据共同构建的Shape
   ///其它单个数据对应的自身CShape 由节点自身存储
   @protected
   List<CombineShape> combineShapeList = [];
@@ -39,15 +39,15 @@ abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMi
   @protected
   final DataNodeSet nodeSet = DataNodeSet();
 
-  ///存储当前显示中的节点
+  ///存储当前允许绘制(显示)的节点
   @protected
   final DataNodeSet showNodeSet = DataNodeSet();
 
-  ///存储数据集改变前的数据
-  ///用于实现动画更新效果
+  ///存储数据集改变前的数据，可用于实现动画更新效果
   @protected
   final DataNodeSet preNodeSet = DataNodeSet();
 
+  ///存储当前"激活"节点
   DataNode? _statusNode;
 
   @override
@@ -101,6 +101,7 @@ abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMi
   @override
   void onDraw(Canvas2 canvas) {
     super.onDraw(canvas);
+    ///TODO 等待更改
     for (var node in showNodeSet.nodeList) {
       node.shape.render(canvas, mPaint, AreaStyle(color: randomColor()));
     }
@@ -232,15 +233,20 @@ abstract class BaseGeomView<T extends Geom> extends GestureView with ViewEventMi
 }
 
 final class CombineShape {
+  final NodeStyle style;
+
   final CShape shape;
   final List<DataNode> nodeList;
 
-  CombineShape(this.shape, this.nodeList);
+  const CombineShape(this.style,this.shape, this.nodeList);
+
+
+
 }
 
-///强制要求提供一个Geom和Layout
-abstract class GeomView<T extends Geom> extends BaseGeomView<T> {
-  GeomView(super.context, super.geom);
+///拥有动画效果的GeomView
+abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
+  AnimateGeomView(super.context, super.geom);
 
   @override
   void onUpdateDataCommand(covariant Command c) {
@@ -273,8 +279,8 @@ abstract class GeomView<T extends Geom> extends BaseGeomView<T> {
         showNodeSet.setAll(nodeList);
         _handleDiffLayout(nodeList, transList);
       },
-      onAnimateLerpStar,
-      onAnimateLerpEnd,
+      onBuildAnimateStarAttrs,
+      onBuildAnimateEndAttrs,
       onAnimateLerpUpdate,
       onAnimateFrameUpdate,
       onStart: () {
@@ -355,13 +361,13 @@ abstract class GeomView<T extends Geom> extends BaseGeomView<T> {
 
   ///返回节点需要执行动画的开始值
   ///属性名必须和结束值相匹配
-  Attrs onAnimateLerpStar(DataNode node, DiffType type) {
+  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     return Attrs();
   }
 
   ///返回节点需要执行动画的结束值
   ///属性名必须和开始值相匹配
-  Attrs onAnimateLerpEnd(DataNode node, DiffType type) {
+  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
     return Attrs();
   }
 

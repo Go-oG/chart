@@ -1,28 +1,29 @@
 import 'package:e_chart/e_chart.dart';
 
 typedef CoordId = String;
+typedef NodeId=String;
 
 final class DataManager extends Disposable {
   ///存放所有元素的映射
-  Map<String, DataNode> _nodeMap = {};
+  Map<NodeId, DataNode> _nodeMap = {};
 
-  Map<String, Coord> _coordMap = {};
+  Map<CoordId, Coord> _coordMap = {};
 
   ///按照坐标域-geom进行数据分类
-  Map<String, Map<GeomType, List<DataNode>>> _nodeCatMap = {};
+  Map<CoordId, Map<GeomType, List<DataNode>>> _nodeCatMap = {};
 
   ///存放轴的极值信息(需要注意层叠的情况(例如柱状图单个层叠))
-  Map<String, Map<AxisDim, DataExtreme>> _extremeMap = {};
+  Map<CoordId, Map<AxisDim, DataExtreme>> _extremeMap = {};
 
   ///存放坐标轴的映射信息
   ///<coordId>
-  Map<String, Map<AxisDim, BaseScale>> _axisScaleMap = {};
+  Map<CoordId, Map<AxisDim, BaseScale>> _axisScaleMap = {};
 
   Coord getCoord(String coordId) {
     return _coordMap[coordId]!;
   }
 
-  DataNode? getNode(String id) => _nodeMap[id];
+  DataNode? getNode(NodeId id) => _nodeMap[id];
 
   List<DataNode> getCoordNodes(CoordScope coord) {
     var tmp = _nodeCatMap[coord];
@@ -50,7 +51,7 @@ final class DataManager extends Disposable {
   }
 
   BaseScale getAxisScale2(String coordId, PosMap pos) {
-    return _axisScaleMap[coordId]![pos.toAxisDim()]!;
+    return _axisScaleMap[coordId]![pos.axisDim]!;
   }
 
   ///经过处理后所有的数据在各自的坐标系范围内都有其百分比位置
@@ -195,7 +196,7 @@ final class DataManager extends Disposable {
       var coordId = node.coordId;
       var extremeMap = resultMap.get3(coordId, extremeFun);
       for (var pos in node.geom.allPos) {
-        var axisDim = pos.toAxisDim();
+        var axisDim = pos.axisDim;
         var extreme = extremeMap[axisDim] ?? DataExtreme([], [], []);
         extremeMap[axisDim] = extreme;
 
@@ -237,11 +238,11 @@ final class DataManager extends Disposable {
 
   @override
   void dispose() {
-    super.dispose();
     _nodeMap = {};
     _coordMap = {};
     _nodeCatMap = {};
     _extremeMap = {};
     _axisScaleMap = {};
+    super.dispose();
   }
 }

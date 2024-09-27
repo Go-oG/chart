@@ -82,7 +82,7 @@ PositiveShape lerpPositive(PositiveShape s, PositiveShape e, double t) {
   return PositiveShape(count: count, center: c, r: r, angleOffset: angle);
 }
 
-CShape positiveShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
+CShape? positiveShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
   int count = attrs.getInt([Attr.count], 4);
   num angleOffset = attrs.getNum([Attr.angleOffset], 0);
 
@@ -118,5 +118,5 @@ CShape positiveShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
       angleOffset: angleOffset,
     );
   }
-  return EmptyShape();
+  return null;
 }

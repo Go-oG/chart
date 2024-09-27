@@ -2,15 +2,10 @@ import 'dart:ui';
 
 import '../../../e_chart.dart';
 
-class PathView extends BasePointView<PathGeom> {
+class PathView extends PointView<PathGeom> {
   PathView(super.context, super.series);
 
   List<Pair<Line, List<DataNode>>> lineList = [];
-
-  @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    // TODO: implement onLayoutPositionAndSize
-  }
 
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {

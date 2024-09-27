@@ -3,33 +3,10 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 ///用于绘制点集视图
-class PointView extends BasePointView<PointGeom> {
+class PointView<T extends PointGeom> extends BasePointView<T> {
   PointView(super.context, super.series);
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
-    var coord = findCoordView();
-    if (coord == null) {
-      return;
-    }
-    for (var node in nodeList) {
-      node.layoutValue = layoutSingleNode(coord, node);
-      node.size = layoutSingleNodeSize(coord, node);
-    }
-  }
-
-  @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
-    //构建Shape
-    for (var node in nodeList) {
-      node.shape = geom.pickShape(node);
-    }
-  }
-
-  ///对单个节点布局属性
   LayoutResult layoutSingleNode(CoordView coord, DataNode node) {
     if (coord is CalendarCoord) {
       DateTime? time = node.getRawData(Dim.x);
@@ -60,6 +37,7 @@ class PointView extends BasePointView<PointGeom> {
     return const LayoutResult();
   }
 
+  @override
   Size layoutSingleNodeSize(CoordView coord, DataNode node) {
     if (coord is CalendarCoord) {
       return coord.cellSize;
@@ -78,21 +56,17 @@ class PointView extends BasePointView<PointGeom> {
   }
 
   @override
-  Attrs onAnimateLerpStar(DataNode node, DiffType type) {
+  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     var attr = node.pickXY();
     attr[Attr.scale] = type == DiffType.add ? 0 : 1;
     return attr;
   }
 
   @override
-  Attrs onAnimateLerpEnd(DataNode node, DiffType type) {
+  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
     var attr = node.pickXY();
     attr[Attr.scale] = type == DiffType.remove ? 0 : 1;
     return attr;
   }
 
-  @override
-  void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {
-    node.fillFromAttr(s.lerp(e, t));
-  }
 }

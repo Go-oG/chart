@@ -50,7 +50,8 @@ abstract class CShape extends Disposable {
 
   bool contains(Offset offset) => bound.contains2(offset) && path.contains(offset);
 
-  void update() {
+  ///标记数据为脏数据 需要重新更新 path和bound
+  void markDirty() {
     _bound = null;
     _path = null;
   }
