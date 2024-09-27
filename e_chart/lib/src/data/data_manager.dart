@@ -55,7 +55,8 @@ final class DataManager extends Disposable {
   }
 
   ///经过处理后所有的数据在各自的坐标系范围内都有其百分比位置
-  void parse(Context context, List<Coord> coordList, List<Geom> list) {
+  ///
+  Future<void> parse(Context context, List<Coord> coordList, List<Geom> list) async {
     ///Step1 记录坐标系(没有包含自定义坐标)
     var coordMap = _recordCoord(coordList);
     Map<Geom, List<ChartTransform>> transformMap = _collectTransform(list);
@@ -63,14 +64,23 @@ final class DataManager extends Disposable {
     ///Hook 1
     for (var entry in transformMap.entries) {
       var dataSet = entry.key.dataSet;
+      for (var item in dataSet) {
+        item.unfreeze();
+      }
+
       for (var trans in entry.value) {
         dataSet = trans.onBeforeConvertRawData(entry.key, dataSet);
       }
+
+      for (var item in dataSet) {
+        item.freeze();
+      }
+
       entry.key.dataSet = dataSet;
     }
 
     ///Step2 转换数据
-    var pair = _convertRawData(list);
+    var pair = await _convertRawData(list);
     var nodeMap = pair.first;
     var geomNodeMap = pair.second;
 
@@ -87,20 +97,18 @@ final class DataManager extends Disposable {
 
     ///Step3 切分数据
     ///按照坐标系-> geomType 划分数据
-    var divisionMap = _divisionalData(nodeMap.values);
+    var divisionMap = await _divisionalData(nodeMap.values);
 
     ///Hook3
     for (var geom in list) {
       var transList = transformMap[geom]!;
-      var nodeList = geomNodeMap[geom]!;
       for (var trans in transList) {
-        trans.onBeforeComputeExtreme(geom, nodeList, coordMap);
         trans.onBeforeComputeExtreme2(nodeMap.values, coordMap);
       }
     }
 
     ///Step4 收集极值信息
-    var extremeMap = _collectExtremeData(nodeMap.values, coordMap);
+    var extremeMap = await _collectExtremeData(nodeMap.values, coordMap);
 
     ///Hook4
     for (var geom in list) {
@@ -131,7 +139,6 @@ final class DataManager extends Disposable {
 
   Map<Geom, List<ChartTransform>> _collectTransform(List<Geom> geomList) {
     Map<Geom, List<ChartTransform>> map = {};
-
     for (var geom in geomList) {
       List<ChartTransform> tl = map[geom] ?? [];
       map[geom] = tl;
@@ -150,7 +157,7 @@ final class DataManager extends Disposable {
   }
 
   ///step2 转换数据
-  Pair<Map<String, DataNode>, Map<Geom, List<DataNode>>> _convertRawData(List<Geom> geomList) {
+  Future<Pair<Map<String, DataNode>, Map<Geom, List<DataNode>>>> _convertRawData(List<Geom> geomList) async {
     Map<String, DataNode> map = {};
     Map<Geom, List<DataNode>> geomMap = {};
     int index = 0;
@@ -173,7 +180,7 @@ final class DataManager extends Disposable {
   }
 
   /// Step3 划分数据将其分割在不同的坐标域里面
-  Map<CoordId, Map<GeomType, List<DataNode>>> _divisionalData(Iterable<DataNode> nodeList) {
+  Future<Map<CoordId, Map<GeomType, List<DataNode>>>> _divisionalData(Iterable<DataNode> nodeList) async {
     Map<CoordId, Map<GeomType, List<DataNode>>> resultMap = {};
     for (var node in nodeList) {
       var childMap = resultMap[node.coordId] ?? {};
@@ -186,7 +193,8 @@ final class DataManager extends Disposable {
   }
 
   ///Step5 收集数据映射信息
-  Map<String, Map<AxisDim, DataExtreme>> _collectExtremeData(Iterable<DataNode> nodeList, Map<String, Coord> coordMap) {
+  Future<Map<String, Map<AxisDim, DataExtreme>>> _collectExtremeData(
+      Iterable<DataNode> nodeList, Map<String, Coord> coordMap) async {
     Map<String, Map<AxisDim, DataExtreme>> resultMap = {};
     Map<AxisDim, DataExtreme> extremeFun() {
       return {};
@@ -204,12 +212,19 @@ final class DataManager extends Disposable {
       }
     }
 
+    List<Future<dynamic>> futureList = [];
+
     ///合并极值信息
     for (var e1 in resultMap.entries) {
-      for (var e2 in e1.value.entries) {
-        e2.value.merge();
-      }
+      futureList.addAll(e1.value.entries
+          .map((e2) => Future(() {
+                e2.value.merge();
+              }))
+          .toList());
     }
+
+    await Future.wait(futureList);
+
     return resultMap;
   }
 

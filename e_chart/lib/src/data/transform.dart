@@ -4,17 +4,19 @@ import 'package:e_chart/e_chart.dart';
 
 ///抽象的转换器
 abstract class ChartTransform extends Disposable {
-  ///在转换原始数据之前调用
+  ///在转换原始数据之前被调用
+  ///返回的原始数据会被传递给[onAfterConvertRawData]方法
+  ///在此之后原始数据将被冻结，原始数据值将无法修改
   List<RawData> onBeforeConvertRawData(Geom geom, List<RawData> dataSet) {
     return dataSet;
   }
 
   ///在原始数据被转换完成后调用
+  ///该方法之后的所有数据取值操作都应该使用DataNode的属性
   void onAfterConvertRawData(Geom geom, List<DataNode> nodeList) {}
 
   ///在计算极值之前被调用
-  void onBeforeComputeExtreme(Geom geom, List<DataNode> nodeList, Map<String, Coord> coordMap) {}
-
+  ///[nodeList] 是全部数据节点集合
   void onBeforeComputeExtreme2(Iterable<DataNode> nodeList, Map<String, Coord> coordMap) {}
 
   ///在创建刻度之前被调用

@@ -45,10 +45,14 @@ class Context with Disposable {
     });
     ///创建数据管理和视图管理器
     dataManager = DataManager();
-    dataManager.parse(this, option.coordList, option.geoms);
-
     viewManager = ViewManager();
     viewManager.parse(this, option);
+
+    dataManager.parse(this, option.coordList, option.geoms).then((v) {
+      viewManager.rootView?.requestLayout();
+    }).catchError((error) {
+      viewManager.rootView?.requestLayout();
+    });
   }
 
   ///更新TickerProvider

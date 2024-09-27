@@ -120,9 +120,7 @@ extension OffsetExt on Offset {
 
 ///给定一个半径和圆心计算给定角度对应的位置坐标
 Offset circlePoint(num radius, num angle, [Offset center = Offset.zero]) {
-  double x = center.dx + radius * m.cos(angle * angleUnit);
-  double y = center.dy + radius * m.sin(angle * angleUnit);
-  return Offset(x, y);
+  return circlePointRadian(radius, angle * angleUnit, center);
 }
 
 Offset circlePointRadian(num radius, num radian, [Offset center = Offset.zero]) {

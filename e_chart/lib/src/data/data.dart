@@ -36,12 +36,14 @@ class RawData {
   }
 
   RawData put(String key, dynamic data) {
+    _checkFreeze();
     _valueMap[key] = data;
     return this;
   }
 
   RawData putAll(Map<String, dynamic>? map) {
     if (map != null) {
+      _checkFreeze();
       map.forEach((key, value) {
         _valueMap[key] = value;
       });
@@ -50,10 +52,12 @@ class RawData {
   }
 
   dynamic remove(String key) {
+    _checkFreeze();
     return _valueMap.remove(key);
   }
 
   List<dynamic> removeAt(Iterable<String> keys) {
+    _checkFreeze();
     List<dynamic> list = [];
     each(keys, (p0, p1) {
       list.add(_valueMap.remove(p0));
@@ -62,11 +66,13 @@ class RawData {
   }
 
   RawData clean() {
+    _checkFreeze();
     _valueMap.clear();
     return this;
   }
 
   RawData removeNotInclude(Iterable<String> keys) {
+    _checkFreeze();
     Set<String> set = (keys is Set<String>) ? keys : Set.from(keys);
     _valueMap.removeWhere((key, value) => !set.contains(key));
     return this;
@@ -101,11 +107,16 @@ class RawData {
   }
 
   void operator []=(String name, dynamic value) {
+    _checkFreeze();
     _valueMap[name] = value;
   }
 
-  RawData copy() {
-    return RawData.fromMap(_valueMap);
+  RawData copy([bool keepFreeze = false]) {
+    var data = RawData.fromMap(_valueMap);
+    if (keepFreeze && isFreeze) {
+      data.freeze();
+    }
+    return data;
   }
 
   Map<String, dynamic> pick(Iterable<String> fields) {
@@ -138,6 +149,26 @@ class RawData {
   @override
   bool operator ==(Object other) {
     return other is RawData && other.id == id;
+  }
+
+  bool _isFreeze = false;
+
+  bool get isFreeze => _isFreeze;
+
+  ///该方法会冻结所有试图修改操作，直到解冻
+  void freeze() {
+    _isFreeze = true;
+  }
+
+  ///解除冻结
+  void unfreeze() {
+    _isFreeze = false;
+  }
+
+  void _checkFreeze() {
+    if (isFreeze) {
+      throw UnsupportedError("Current object is freeze");
+    }
   }
 }
 
