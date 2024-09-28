@@ -5,6 +5,8 @@ import 'package:e_chart/e_chart.dart';
 class Graph {
   late final List<GraphNode> nodes;
   late final List<Edge> edges;
+  double width=0;
+  double height=0;
 
   Graph(List<GraphNode> nodes, {List<Edge>? edges}) {
     this.nodes = [...nodes];
@@ -39,6 +41,7 @@ class Graph {
     edges.remove(edge);
     return this;
   }
+
 }
 
 class Edge extends DataNode {
