@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///百分比转换
-class PercentTransform extends DataTransform {
+class PercentTransform extends BaseDataTransform {
   ///该字段对应的值必须是num 或者为null
   String field;
   String dimension;

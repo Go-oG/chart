@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:statistics/statistics.dart';
 
 ///统计处理(所有的操作方法都是针对数值操作)
-class AggregateTransform extends DataTransform {
+class AggregateTransform extends BaseDataTransform {
   //<rawField,Method,asField>
   List<FixPair2<String, AggregateMethod, String>> fields;
   List<String> groupBy;

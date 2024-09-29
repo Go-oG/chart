@@ -1,9 +1,42 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-///抽象的转换器
-abstract class ChartTransform extends Disposable {
+mixin class TransformMix {
+  final SafeList<DataTransform> _dataTransformList = SafeList();
+  final SafeList<LayoutTransform> _layoutTransformList = SafeList();
+
+  void addDataTransform(DataTransform transform) {
+    _dataTransformList.add(transform);
+  }
+
+  void removeDataTransform(DataTransform transform) {
+    _dataTransformList.remove(transform);
+  }
+
+  void addDataLayoutTransform(LayoutTransform transform) {
+    _layoutTransformList.add(transform);
+  }
+
+  void removeDataLayoutTransform(LayoutTransform transform) {
+    _layoutTransformList.remove(transform);
+  }
+
+  void clearDataTransform() {
+    _dataTransformList.clear();
+  }
+
+  void clearLayoutTransform() {
+    _layoutTransformList.clear();
+  }
+
+  List<DataTransform> get dataTransformList => _dataTransformList.toList();
+
+  List<LayoutTransform> get layoutTransformList => _layoutTransformList.toList();
+}
+
+abstract class DataTransform extends Disposable {
   ///在转换原始数据之前被调用
   ///返回的原始数据会被传递给[onAfterConvertRawData]方法
   ///在此之后原始数据将被冻结，原始数据值将无法修改
@@ -26,25 +59,9 @@ abstract class ChartTransform extends Disposable {
   ///在创建刻度之后被调用
   void onAfterBuildScale(Context context, Geom geom, List<DataNode> nodeList) {}
 
-  ///如果需要拦截布局则返回true
-  /// 当返回true时，则不会执行正常的布局流程，而是直接调用[onBuildNodeShape]方法
-  /// 否则会先后调用 [onBeforeLayout], [onAfterLayout]
-  /// 通常只有在一些复杂布局 例如 图 树 时才会拦截布局流程
-  bool onInterceptLayout(
-      Context context, ViewNotifier? notifier, List<DataNode> nodeList, double width, double height) {
-    return false;
-  }
-
-  void onBuildNodeShape(List<DataNode> nodeList) {}
-
-  ///正常布局之前
-  void onBeforeLayout(Context context, ViewNotifier? notifier, List<DataNode> nodeList, double width, double height) {}
-
-  ///正常布局之后
-  void onAfterLayout(Context context, List<DataNode> nodeList, double width, double height) {}
 }
 
-abstract class DataTransform extends ChartTransform {
+abstract class BaseDataTransform extends DataTransform {
   @override
   List<RawData> onBeforeConvertRawData(Geom geom, List<RawData> dataSet) {
     return transform(dataSet);
@@ -53,7 +70,7 @@ abstract class DataTransform extends ChartTransform {
   List<RawData> transform(List<RawData> input);
 }
 
-abstract class LayoutTransform extends ChartTransform {
+abstract class LayoutTransform {
   ViewNotifier? _viewNotifier;
 
   set notifier(ViewNotifier? notifier) {
@@ -69,20 +86,24 @@ abstract class LayoutTransform extends ChartTransform {
   }
 
   bool get isDynamicLayout => false;
+
+  ///正常布局之前
+  FutureOr<void> onLayout(Context context, GeomView view, ViewNotifier? notifier, List<DataNode> nodeList) {}
+
+  void dispose() {}
 }
 
 abstract class PointTransform extends LayoutTransform {
   @override
-  bool onBeforeLayout(Context context, ViewNotifier? notifier, List<DataNode> nodeList, double width, double height) {
-    if (nodeList.isEmpty) {
-      return true;
-    }
+  FutureOr<void> onLayout(Context context, ChartView view, ViewNotifier? notifier, List<DataNode> nodeList) async {
     this.notifier = notifier;
-    transform(context, width, height, nodeList);
-    return true;
+    if (nodeList.isEmpty) {
+      return;
+    }
+    await transform(context, view.width, view.height, nodeList);
   }
 
-  void transform(Context context, double width, double height, List<DataNode> nodeList);
+  FutureOr<void> transform(Context context, double width, double height, List<DataNode> nodeList);
 }
 
 abstract class EdgeTransform extends LayoutTransform {
@@ -95,18 +116,17 @@ abstract class EdgeTransform extends LayoutTransform {
   Graph? get graph => _graph;
 
   @override
-  bool onBeforeLayout(Context context, ViewNotifier? notifier, List<DataNode> nodeList, double width, double height) {
-    if (nodeList.isEmpty) {
-      return true;
-    }
+  FutureOr<void> onLayout(Context context, ChartView view, ViewNotifier? notifier, List<DataNode> nodeList) async {
     this.notifier = notifier;
+    if (nodeList.isEmpty) {
+      return;
+    }
     var gg = toGraph2(context, nodeList, childFun);
     _graph = gg;
-    transform(context, width, height, gg);
-    return true;
+    await transform(context, view.width, view.height, gg);
   }
 
-  void transform(Context context, double width, double height, Graph graph);
+  FutureOr<void> transform(Context context, double width, double height, Graph graph);
 }
 
 abstract class HierarchyTransform extends LayoutTransform {
@@ -131,20 +151,19 @@ abstract class HierarchyTransform extends LayoutTransform {
   TreeNode? get root => _root;
 
   @override
-  bool onBeforeLayout(Context context, ViewNotifier? notifier, List<DataNode> nodeList, double width, double height) {
-    if (nodeList.isEmpty) {
-      return true;
-    }
+  FutureOr<void> onLayout(Context context, ChartView view, ViewNotifier? notifier, List<DataNode> nodeList) async {
     this.notifier = notifier;
+    if (nodeList.isEmpty) {
+      return;
+    }
     var tt = toTree2(context, nodeList, parentFun, childFun);
     if (tt == null) {
-      return true;
+      return;
     }
-    transform(context, width, height, tt);
-    return true;
+    await transform(context, view.width, view.height, tt);
   }
 
-  void transform(Context context, double width, double height, TreeNode root);
+  FutureOr<void> transform(Context context, double width, double height, TreeNode root);
 
   void initData(TreeNode root) {
     int c = 0;

@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///补全字段
-class ImputeTransform extends DataTransform {
+class ImputeTransform extends BaseDataTransform {
   String field;
   ImputeMethod method;
   dynamic value;

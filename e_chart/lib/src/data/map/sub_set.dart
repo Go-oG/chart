@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///返回子集
-class SubSetTransform extends DataTransform {
+class SubSetTransform extends BaseDataTransform {
   int startIndex;
   int endIndex;
   Set<String> keepFields;

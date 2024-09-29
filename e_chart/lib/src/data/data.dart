@@ -208,7 +208,11 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
 
   dynamic getRawData(Dim dim) => _data.getRawData(geom, dim);
 
-  void setMapData(Dim dim, dynamic data) => _data.setMapData(dim, data);
+  List<double> getNormalizeData(Dim dim) => _data.getNormalizeData(dim)!;
+
+  void setNormalizeData(Dim dim, double data) => _data.setNormalizeData(dim, data);
+
+  void setNormalizeData2(Dim dim, List<double> data) => _data.setNormalizeData2(dim, data);
 
   String groupCategory([Dim dim = Dim.x]) {
     var raw = getRawData(dim);
@@ -319,7 +323,9 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
 
 final class _RawDataMap {
   final RawData data;
-  Map<Dim, dynamic> _mapMap = {};
+
+  ///存储原始数据每个维度下 归一化后的数据
+  Map<Dim, List<double>> _normalizeMap = {};
 
   _RawDataMap(this.data);
 
@@ -327,18 +333,21 @@ final class _RawDataMap {
     return data.get2(geom.pos(dim).field);
   }
 
-  dynamic getMapData(Dim dim) {
-    return _mapMap[dim];
+  List<double>? getNormalizeData(Dim dim) {
+    return _normalizeMap[dim];
   }
 
-  void setMapData(Dim dim, dynamic data) {
-    _mapMap[dim] = data;
+  void setNormalizeData(Dim dim, double data) {
+    _normalizeMap[dim] = [data];
   }
 
-  void clearMapData() {
-    _mapMap = {};
+  void setNormalizeData2(Dim dim, List<double> data) {
+    _normalizeMap[dim] = data;
   }
 
+  void clearNormalizeData() {
+    _normalizeMap = {};
+  }
 
 }
 

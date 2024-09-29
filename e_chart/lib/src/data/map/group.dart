@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///对数据分组排序(类似SQL的groupBy orderBy)
-class GroupTransform extends DataTransform {
+class GroupTransform extends BaseDataTransform {
   List<String> groupBy;
   List<String> orderBy;
 

@@ -240,8 +240,6 @@ final class CombineShape {
 
   const CombineShape(this.style,this.shape, this.nodeList);
 
-
-
 }
 
 ///拥有动画效果的GeomView
@@ -259,25 +257,37 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   }
 
   ///布局节点位置
-  ///在该方法内部实现了动画更新
-  ///和新节点数据的获取和旧节点数据的保存
+  ///如果geom 中[LayoutTransform]不为空，则将所有的布局方式移交给[LayoutTransform]处理
+  ///否则 执行默认的布局方式
+  ///默认布局方式动画更新
   @override
   FutureOr<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
-    saveOldNodeSet();
-    List<DataNode> oldList = preNodeSet.nodeList;
     var pair = await _loadNewLayoutDataNodeSet();
     var newList = pair.first;
     var newLayoutList = pair.second;
+    var transList = geom.layoutTransformList;
+    if (transList.isNotEmpty) {
+      for (var transform in transList) {
+        await transform.onLayout(context, this, viewNotifier, newList);
+      }
+      return;
+    }
+
+    ///默认构造方式
+    saveOldNodeSet();
+    List<DataNode> oldList = preNodeSet.nodeList;
     setNodeSet(newList);
     showNodeSet.setAll(newLayoutList);
-    var transList = geom.transformList;
     var an = DiffUtil.diff(
       getAnimateOption(LayoutType.layout, oldList.length + newLayoutList.length),
       oldList,
       newLayoutList,
       (nodeList) {
         showNodeSet.setAll(nodeList);
-        _handleDiffLayout(nodeList, transList);
+
+        onLayoutNodeStart(nodeList, false);
+        onLayoutPositionAndSize(nodeList);
+        onLayoutNodeEnd(nodeList, false);
       },
       onBuildAnimateStarAttrs,
       onBuildAnimateEndAttrs,
@@ -314,33 +324,6 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   ///默认返回全部
   FutureOr<List<DataNode>> clipNewLayoutNodes(List<DataNode> newTotalDataSet) {
     return newTotalDataSet;
-  }
-
-  ///处理数据布局
-  void _handleDiffLayout(List<DataNode> nodeList, List<ChartTransform> transList) {
-    List<ChartTransform> interceptLayoutList = [];
-    for (var transform in transList) {
-      if (transform.onInterceptLayout(context, viewNotifier, nodeList, width, height)) {
-        interceptLayoutList.add(transform);
-      }
-    }
-    if (interceptLayoutList.isNotEmpty) {
-      onLayoutNodeStart(nodeList, true);
-      for (var transform in transList) {
-        transform.onBuildNodeShape(nodeList);
-      }
-      onLayoutNodeEnd(nodeList, true);
-    } else {
-      onLayoutNodeStart(nodeList, false);
-      for (var transform in transList) {
-        transform.onBeforeLayout(context, viewNotifier, nodeList, width, height);
-      }
-      onLayoutPositionAndSize(nodeList);
-      for (var transform in transList) {
-        transform.onAfterLayout(context, nodeList, width, height);
-      }
-      onLayoutNodeEnd(nodeList, false);
-    }
   }
 
   ///在布局节点之前回调

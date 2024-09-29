@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///只保留指定字段的数据
-class PickTransform extends DataTransform {
+class PickTransform extends BaseDataTransform {
   late Set<String> fields;
 
   PickTransform([Iterable<String>? fields]) {

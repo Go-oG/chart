@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///对数据分组
-abstract class Dodge extends ChartTransform {
+abstract class Dodge extends DataTransform {
   Dim groupDim;
   Fun2<DataNode, String?>? stackIdFun;
   Fun3<DataNode, DataNode, int>? sortFun;

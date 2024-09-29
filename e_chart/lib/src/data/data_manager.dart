@@ -59,7 +59,7 @@ final class DataManager extends Disposable {
   Future<void> parse(Context context, List<Coord> coordList, List<Geom> list) async {
     ///Step1 记录坐标系(没有包含自定义坐标)
     var coordMap = _recordCoord(coordList);
-    Map<Geom, List<ChartTransform>> transformMap = _collectTransform(list);
+    Map<Geom, List<DataTransform>> transformMap = _collectTransform(list);
 
     ///Hook 1
     for (var entry in transformMap.entries) {
@@ -120,7 +120,6 @@ final class DataManager extends Disposable {
 
     ///Step5 生成比例尺
     var axisMap = _niceAxis(coordMap, extremeMap);
-
     _coordMap = coordMap;
     _nodeMap = nodeMap;
     _nodeCatMap = divisionMap;
@@ -135,14 +134,13 @@ final class DataManager extends Disposable {
         trans.onAfterBuildScale(context, geom, nodeList);
       }
     }
+
   }
 
-  Map<Geom, List<ChartTransform>> _collectTransform(List<Geom> geomList) {
-    Map<Geom, List<ChartTransform>> map = {};
+  Map<Geom, List<DataTransform>> _collectTransform(List<Geom> geomList) {
+    Map<Geom, List<DataTransform>> map = {};
     for (var geom in geomList) {
-      List<ChartTransform> tl = map[geom] ?? [];
-      map[geom] = tl;
-      tl.addAll(geom.transformList);
+      map[geom] = geom.dataTransformList;
     }
     return map;
   }
@@ -207,7 +205,6 @@ final class DataManager extends Disposable {
         var axisDim = pos.axisDim;
         var extreme = extremeMap[axisDim] ?? DataExtreme([], [], []);
         extremeMap[axisDim] = extreme;
-
         extreme.addData(node.getRawData(axisDim.dim));
       }
     }
@@ -248,6 +245,8 @@ final class DataManager extends Disposable {
         resultMap.get2(coord.id, {})[axisDim] = scale;
       }
     }
+
+
     return resultMap;
   }
 

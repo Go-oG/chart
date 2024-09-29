@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///排序
-class SortTransform extends DataTransform {
+class SortTransform extends BaseDataTransform {
   int takeTopCount;
   Fun3<RawData, RawData, int> sortFun;
 
@@ -18,7 +18,7 @@ class SortTransform extends DataTransform {
 }
 
 ///排序
-class SortByTransform extends DataTransform {
+class SortByTransform extends BaseDataTransform {
   List<String> sortFields;
   Order order;
 

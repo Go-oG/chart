@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///属性名字重新映射
-class RenameTransform extends DataTransform {
+class RenameTransform extends BaseDataTransform {
   late Map<String, String> fieldMap;
 
   RenameTransform([Map<String, String>? fieldMap]) {

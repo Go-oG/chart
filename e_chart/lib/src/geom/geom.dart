@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 ///标记抽象表示
 ///每个图表必须要有一个Geom
-abstract class Geom extends ViewNotifier with GeomMix {
+abstract class Geom extends ViewNotifier with GeomMix,TransformMix {
   late final String id;
   late String coordId;
   List<RawData> dataSet;
@@ -24,8 +24,6 @@ abstract class Geom extends ViewNotifier with GeomMix {
   ///Geom的索引 在Context中进行分配
   int geomIndex = -1;
 
-  List<ChartTransform> _transformList = [];
-
   Geom(
     this.dataSet,
     this.coordId, {
@@ -40,52 +38,6 @@ abstract class Geom extends ViewNotifier with GeomMix {
     this.id = isEmpty(id) ? randomId() : id!;
     this.layoutParams = layoutParams ?? LayoutParams.matchAll();
   }
-
-  void addTransform(ChartTransform transform) {
-    List<ChartTransform> list = List.from(_transformList);
-    list.remove(transform);
-    list.add(transform);
-    _transformList = list;
-  }
-
-  void addTransformList(Iterable<ChartTransform> list) {
-    if (list.isEmpty) {
-      return;
-    }
-    if (_transformList.isEmpty) {
-      _transformList = List.from(list);
-      return;
-    }
-    List<ChartTransform> resultList = List.from(_transformList);
-    for (var item in list) {
-      resultList.remove(item);
-    }
-    resultList.addAll(list);
-    _transformList = resultList;
-  }
-
-  void removeTransform(ChartTransform transform) {
-    List<ChartTransform> list = List.from(_transformList);
-    list.remove(transform);
-    _transformList = list;
-  }
-
-  void removeTransformList(Iterable<ChartTransform> list) {
-    if (list.isEmpty) {
-      return;
-    }
-    List<ChartTransform> resultList = List.from(_transformList);
-    for (var item in list) {
-      resultList.remove(item);
-    }
-    _transformList = resultList;
-  }
-
-  void cleanTransform() {
-    _transformList = [];
-  }
-
-  List<ChartTransform> get transformList => List.from(_transformList, growable: false);
 
   ///返回承载该Geom的渲染视图
   ///如果返回null,那么将会调用[GeomFactory]的相关方法

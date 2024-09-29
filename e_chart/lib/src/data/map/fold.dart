@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 
 ///数据展开
-class FoldTransform extends DataTransform {
+class FoldTransform extends BaseDataTransform {
   ///需要展开的字段
   List<String> fields;
 

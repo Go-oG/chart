@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 import 'package:statistics/statistics.dart';
 
 ///实现Stack相关
-abstract class BaseStack extends ChartTransform {
+abstract class BaseStack extends DataTransform {
   StackType type;
   bool percent;
   Fun2<DataNode, String?>? stackIdFun;
@@ -45,10 +45,10 @@ abstract class BaseStack extends ChartTransform {
       var node = dataList.first;
       var raw = node.getRawData(stackDim);
       if (raw == null || (raw is List && raw.isEmpty)) {
-        node.setMapData(dim, [0, 0]);
+        node.setNormalizeData2(dim, [0, 0]);
         return;
       }
-      node.setMapData(dim, [0, 100]);
+      node.setNormalizeData2(dim, [0, 100]);
       return;
     }
 
@@ -132,13 +132,13 @@ abstract class BaseStack extends ChartTransform {
       }
       var statistics = statisticsMap[node]!;
       var partList = toList(node.getRawData(stackDim));
-      var minV = statistics.min;
-      List<num> dl = [];
+      var minV = statistics.min.toDouble();
+      List<double> dl = [];
       for (var part in partList) {
         var raw = part as num;
         dl.add(up + raw - minV);
       }
-      node.setMapData(stackDim, dl);
+      node.setNormalizeData2(stackDim, dl);
       up = up + statistics.max - minV;
     });
   }
@@ -161,12 +161,12 @@ abstract class BaseStack extends ChartTransform {
       var partList = toList(node.getRawData(stackDim));
       var minV = statistics.min;
 
-      List<num> dl = [];
+      List<double> dl = [];
       for (var part in partList) {
         var raw = part as num;
-        dl.add(down - (raw - minV));
+        dl.add(down - (raw - minV).toDouble());
       }
-      node.setMapData(stackDim, dl);
+      node.setNormalizeData2(stackDim, dl);
       down = down - (statistics.max - minV);
     });
   }
@@ -189,13 +189,13 @@ abstract class BaseStack extends ChartTransform {
     var range = (maxValue - minValue);
 
     for (var node in dataList) {
-      List<num> dl = [];
+      List<double> dl = [];
       for (var part in toList(node.getRawData(stackDim))) {
         var vv = part as num;
         var dir = vv >= 0 ? 1 : -1;
         dl.add(100 * dir * (vv - minValue) / range);
       }
-      node.setMapData(stackDim, dl);
+      node.setNormalizeData2(stackDim, dl);
     }
   }
 

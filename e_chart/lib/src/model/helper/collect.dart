@@ -111,6 +111,14 @@ class SafeList<T> extends Disposable {
     }
   }
 
+  List<T> toList(){
+    List<T> result=[];
+    each((v){
+      result.add(v);
+    });
+    return result;
+  }
+
   bool get isEmpty => _count <= 0;
 
   bool get isNotEmpty => _count > 0;
