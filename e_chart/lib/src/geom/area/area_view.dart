@@ -9,16 +9,6 @@ class AreaView extends PointView<AreaGeom> {
   Map<Area, List<DataNode>> areaMap = {};
 
   @override
-  LayoutResult layoutSingleNode(CoordView<Coord> coord, DataNode node) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Size layoutSingleNodeSize(CoordView<Coord> coord, DataNode node) {
-    throw UnimplementedError();
-  }
-
-  @override
   Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
     var map = node.pickXY();
     map[Attr.scale] = type == DiffType.add ? 0 : 1;
@@ -47,10 +37,7 @@ class AreaView extends PointView<AreaGeom> {
   }
 
   @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
     mergeAreas(nodeList);
   }
 

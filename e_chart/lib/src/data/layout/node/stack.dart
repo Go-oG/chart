@@ -45,10 +45,10 @@ abstract class BaseStack extends DataTransform {
       var node = dataList.first;
       var raw = node.getRawData(stackDim);
       if (raw == null || (raw is List && raw.isEmpty)) {
-        node.setNormalizeData2(dim, [0, 0]);
+        node.normalize.set(dim, [0, 0]);
         return;
       }
-      node.setNormalizeData2(dim, [0, 100]);
+      node.normalize.set(dim, [0, 100]);
       return;
     }
 
@@ -138,7 +138,7 @@ abstract class BaseStack extends DataTransform {
         var raw = part as num;
         dl.add(up + raw - minV);
       }
-      node.setNormalizeData2(stackDim, dl);
+      node.normalize.set(stackDim, dl);
       up = up + statistics.max - minV;
     });
   }
@@ -166,7 +166,7 @@ abstract class BaseStack extends DataTransform {
         var raw = part as num;
         dl.add(down - (raw - minV).toDouble());
       }
-      node.setNormalizeData2(stackDim, dl);
+      node.normalize.set(stackDim, dl);
       down = down - (statistics.max - minV);
     });
   }
@@ -195,7 +195,7 @@ abstract class BaseStack extends DataTransform {
         var dir = vv >= 0 ? 1 : -1;
         dl.add(100 * dir * (vv - minValue) / range);
       }
-      node.setNormalizeData2(stackDim, dl);
+      node.normalize.set(stackDim, dl);
     }
   }
 

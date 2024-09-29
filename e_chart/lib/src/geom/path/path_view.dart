@@ -5,29 +5,9 @@ import '../../../e_chart.dart';
 class PathView extends PointView<PathGeom> {
   PathView(super.context, super.series);
 
-  List<Pair<Line, List<DataNode>>> lineList = [];
-
   @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
     mergePath(nodeList);
-  }
-
-  @override
-  void onDraw(Canvas2 canvas) {
-    var style = const LineStyle();
-    var fillStyle = const AreaStyle();
-    for (var pair in lineList) {
-      style.drawPath(canvas, mPaint, pair.first.path, pair.first.bound);
-    }
-
-    for (var pair in lineList) {
-      for (var node in pair.second) {
-        node.shape.render(canvas, mPaint, fillStyle);
-      }
-    }
   }
 
   @override
@@ -37,15 +17,15 @@ class PathView extends PointView<PathGeom> {
   }
 
   void mergePath(List<DataNode> nodeList) {
-    List<Pair<Line, List<DataNode>>> lineList = [];
     List<List<DataNode>> groupList = groupNode(nodeList);
-
+    List<CombineShape> shapeList = [];
     for (var list in groupList) {
       List<Offset> offsetList = List.from(list.map((e) => Offset(e.x, e.y)));
       var line = Line(offsetList, smooth: geom.smooth, dashList: geom.dashList, disDiff: geom.disDiff);
-      lineList.add(Pair(line, list));
+      //TODO 样式
+      shapeList.add(CombineShape(list.first.style, line, list));
     }
-    this.lineList = lineList;
+    combineShapeList = shapeList;
   }
 
   ///分组数据

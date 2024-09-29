@@ -16,10 +16,7 @@ class PieView extends BasePointView<PieGeom> {
   Offset center = Offset.zero;
 
   @override
-  void onLayoutNodeStart(List<DataNode> newList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
+  void onLayoutNodeStart(List<DataNode> newList) {
     num maxSize = shortSide;
     minRadius = geom.innerRadius.convert(maxSize);
     maxRadius = geom.outerRadius.convert(maxSize);
@@ -66,10 +63,7 @@ class PieView extends BasePointView<PieGeom> {
   }
 
   @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
     for (var node in nodeList) {
       node.shape = node.buildArcShape();
     }

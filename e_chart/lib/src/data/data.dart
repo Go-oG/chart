@@ -174,7 +174,7 @@ class RawData {
 
 ///对原始数据的封装
 class DataNode extends Disposable with StateMix, NodePropsMix {
-  late final _RawDataMap _data;
+  late final NormalizeData _data;
 
   ///该节点所属的Geom
   Geom geom;
@@ -194,7 +194,7 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
   Text2? label;
 
   DataNode(this.geom, RawData data, {double? value, this.priority = 0, int? index, int? deep}) {
-    _data = _RawDataMap(data);
+    _data = NormalizeData(data);
     if (index != null) {
       this.index = index;
     }
@@ -208,11 +208,13 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
 
   dynamic getRawData(Dim dim) => _data.getRawData(geom, dim);
 
-  List<double> getNormalizeData(Dim dim) => _data.getNormalizeData(dim)!;
-
-  void setNormalizeData(Dim dim, double data) => _data.setNormalizeData(dim, data);
-
-  void setNormalizeData2(Dim dim, List<double> data) => _data.setNormalizeData2(dim, data);
+  List<dynamic> getRawData2(Dim dim) {
+    var raw = getRawData(dim);
+    if (raw is List) {
+      return raw;
+    }
+    return [raw];
+  }
 
   String groupCategory([Dim dim = Dim.x]) {
     var raw = getRawData(dim);
@@ -286,7 +288,9 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
     label = null;
   }
 
-  RawData get data => _data.data;
+  RawData get data => _data.raw;
+
+  NormalizeData get normalize => _data;
 
   ///辅助属性
   String get id => data.id;
@@ -321,31 +325,30 @@ class DataNode extends Disposable with StateMix, NodePropsMix {
   }
 }
 
-final class _RawDataMap {
-  final RawData data;
+final class NormalizeData {
+  final RawData raw;
 
   ///存储原始数据每个维度下 归一化后的数据
   Map<Dim, List<double>> _normalizeMap = {};
 
-  _RawDataMap(this.data);
+  NormalizeData(this.raw);
 
   dynamic getRawData(Geom geom, Dim dim) {
-    return data.get2(geom.pos(dim).field);
+    return raw.get2(geom.pos(dim).field);
   }
 
-  List<double>? getNormalizeData(Dim dim) {
+  List<double> get(Dim dim) {
+    return _normalizeMap[dim]!;
+  }
+  List<double>? getNull(Dim dim) {
     return _normalizeMap[dim];
   }
 
-  void setNormalizeData(Dim dim, double data) {
-    _normalizeMap[dim] = [data];
-  }
-
-  void setNormalizeData2(Dim dim, List<double> data) {
+  void set(Dim dim, List<double> data) {
     _normalizeMap[dim] = data;
   }
 
-  void clearNormalizeData() {
+  void clear() {
     _normalizeMap = {};
   }
 

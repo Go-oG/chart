@@ -120,6 +120,10 @@ final class DataManager extends Disposable {
 
     ///Step5 生成比例尺
     var axisMap = _niceAxis(coordMap, extremeMap);
+
+    ///归一化数据
+    _nodeNormalize(context, nodeMap.values, axisMap);
+
     _coordMap = coordMap;
     _nodeMap = nodeMap;
     _nodeCatMap = divisionMap;
@@ -134,7 +138,6 @@ final class DataManager extends Disposable {
         trans.onAfterBuildScale(context, geom, nodeList);
       }
     }
-
   }
 
   Map<Geom, List<DataTransform>> _collectTransform(List<Geom> geomList) {
@@ -226,11 +229,11 @@ final class DataManager extends Disposable {
   }
 
   ///Step6 生成坐标轴的比例尺
-  Map<String, Map<AxisDim, BaseScale>> _niceAxis(
+  Map<CoordId, Map<AxisDim, BaseScale>> _niceAxis(
     Map<String, Coord> coordMap,
     Map<String, Map<AxisDim, DataExtreme>> extremeMap,
   ) {
-    Map<String, Map<AxisDim, BaseScale>> resultMap = {};
+    Map<CoordId, Map<AxisDim, BaseScale>> resultMap = {};
     for (var entry in extremeMap.entries) {
       var coord = coordMap[entry.key];
       if (coord == null) {
@@ -245,9 +248,29 @@ final class DataManager extends Disposable {
         resultMap.get2(coord.id, {})[axisDim] = scale;
       }
     }
-
-
     return resultMap;
+  }
+
+  /// Step7 进行节点归一化
+  void _nodeNormalize(Context context, Iterable<DataNode> nodes, Map<CoordId, Map<AxisDim, BaseScale>> axisMap) {
+    for (var node in nodes) {
+      var geom = node.geom;
+      var coordId = node.coordId;
+      Map<AxisDim, BaseScale>? scaleMap = axisMap[coordId];
+      if (scaleMap == null || scaleMap.isEmpty) {
+        node.normalize.clear();
+      } else {
+        for (var pos in geom.allPos) {
+          var scale = scaleMap[pos.axisDim]!;
+          List<double> dl = [];
+          var dim = pos.dim;
+          for (var item in node.getRawData2(dim)) {
+            dl.add(scale.normalize(item));
+          }
+          node.normalize.set(dim, dl);
+        }
+      }
+    }
   }
 
   @override

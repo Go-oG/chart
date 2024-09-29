@@ -15,10 +15,7 @@ class BoxView extends AnimateGeomView<BoxGeom> {
   }
 
   @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
     // for (var node in nodeList) {
     //   var xList = node.xList;
     //   var yList = node.yList;

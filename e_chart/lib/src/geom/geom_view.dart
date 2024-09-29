@@ -101,6 +101,11 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   @override
   void onDraw(Canvas2 canvas) {
     super.onDraw(canvas);
+
+    for (var shape in combineShapeList) {
+      shape.style.render(canvas, mPaint, shape.shape);
+    }
+
     ///TODO 等待更改
     for (var node in showNodeSet.nodeList) {
       node.shape.render(canvas, mPaint, AreaStyle(color: randomColor()));
@@ -284,10 +289,9 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
       newLayoutList,
       (nodeList) {
         showNodeSet.setAll(nodeList);
-
-        onLayoutNodeStart(nodeList, false);
+        onLayoutNodeStart(nodeList);
         onLayoutPositionAndSize(nodeList);
-        onLayoutNodeEnd(nodeList, false);
+        onLayoutNodeEnd(nodeList);
       },
       onBuildAnimateStarAttrs,
       onBuildAnimateEndAttrs,
@@ -327,11 +331,11 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   }
 
   ///在布局节点之前回调
-  void onLayoutNodeStart(List<DataNode> newList, bool isIntercept) {}
+  void onLayoutNodeStart(List<DataNode> newList) {}
 
   void onLayoutPositionAndSize(List<DataNode> nodeList);
 
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {}
+  void onLayoutNodeEnd(List<DataNode> nodeList) {}
 
   ///动画开始时回调
   void onAnimateStart(List<DataNode> oldList, List<DataNode> newList) {

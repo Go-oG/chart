@@ -20,11 +20,7 @@ abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
   }
 
   @override
-  void onLayoutNodeEnd(List<DataNode> nodeList, bool isIntercept) {
-    if (isIntercept) {
-      return;
-    }
-    //构建Shape
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
     for (var node in nodeList) {
       node.shape = geom.pickShape(node);
     }

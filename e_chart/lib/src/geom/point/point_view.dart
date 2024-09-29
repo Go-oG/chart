@@ -8,20 +8,22 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
 
   @override
   LayoutResult layoutSingleNode(CoordView coord, DataNode node) {
+    var xData = node.normalize.get(Dim.x);
+    var yData = node.normalize.get(Dim.y);
     if (coord is CalendarCoord) {
       DateTime? time = node.getRawData(Dim.x);
       time ??= node.getRawData(Dim.y);
       if (time == null) {
         throw ArgumentError("time is null");
       }
-      var x = coord.convert2(node.xAxisDim, time);
-      var y = coord.convert2(node.yAxisDim, time);
+      var x = coord.convert(node.xAxisDim, xData.first);
+      var y = coord.convert(node.yAxisDim, yData.first);
       return OffsetLayoutResult(x: x, y: y);
     }
-    var x = node.getRawData(Dim.x);
-    var y = node.getRawData(Dim.y);
-    x = (coord as dynamic).convert2(node.xAxisDim, x);
-    y = (coord as dynamic).convert2(node.yAxisDim, y);
+
+    var x = (coord).convert(node.xAxisDim, xData.first);
+    var y = (coord).convert(node.yAxisDim, yData.first);
+
     if (coord is GridCoord || coord is ParallelCoord) {
       return OffsetLayoutResult(x: x, y: y);
     }
