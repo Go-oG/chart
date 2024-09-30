@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/ext/number_ext.dart';
 import 'package:flutter/material.dart';
 
 ///日历坐标系视图
@@ -17,7 +16,7 @@ class CalendarCoordImpl extends CalendarCoord {
   CalendarCoordImpl(super.context, super.props);
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom)async {
     Pair<DateTime, DateTime> pair = _adjustTime(option.range.first, option.range.second);
     _startTime = pair.first;
     _endTime = pair.second;
@@ -294,12 +293,6 @@ class CalendarCoordImpl extends CalendarCoord {
     //   repaint();
     // }
   }
-
-  @override
-  bool get enableDrag => true;
-
-  @override
-  bool get enableLongPress => true;
 
   @override
   int get dimCount => 1;

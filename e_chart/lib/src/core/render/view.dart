@@ -6,8 +6,6 @@ import 'package:flutter/rendering.dart';
 import 'render_root.dart';
 
 abstract class ChartView with ViewFrame {
-  late final String id;
-
   Context context;
 
   AttachInfo? _attachInfo;
@@ -20,9 +18,7 @@ abstract class ChartView with ViewFrame {
     _attachInfo = info;
   }
 
-  ChartView(this.context, {String? id}) {
-    this.id = isEmpty(id) ? randomId() : id!;
-  }
+  ChartView(this.context);
 
   @protected
   ViewParent? mParent;
@@ -67,11 +63,11 @@ abstract class ChartView with ViewFrame {
     return res;
   }
 
-  FutureOr<void> measure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
-    onMeasure(widthSpec, heightSpec);
+  Future<void> measure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
+    await onMeasure(widthSpec, heightSpec);
   }
 
-  FutureOr<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     LayoutParams lp = layoutParams;
     double w = _measureSelfWithParent(widthSpec, lp.hPadding, lp.width);
     double h = _measureSelfWithParent(heightSpec, lp.vPadding, lp.height);
@@ -113,7 +109,7 @@ abstract class ChartView with ViewFrame {
     return pendingSize;
   }
 
-  FutureOr<void> layout(double l, double t, double r, double b) {
+  Future<void> layout(double l, double t, double r, double b) async {
     var oldL = left;
     var oldT = top;
     var oldR = right;
@@ -121,7 +117,7 @@ abstract class ChartView with ViewFrame {
 
     bool changed = setFrame(l, t, r, b);
     if (changed || _forceLayout) {
-      onLayout(changed, l, t, r, b);
+      await onLayout(changed, l, t, r, b);
       onLayoutChange(l, t, r, b, oldL, oldT, oldR, oldB);
     }
     _forceLayout = false;
@@ -165,7 +161,7 @@ abstract class ChartView with ViewFrame {
     return changed;
   }
 
-  FutureOr<void> onLayout(bool changed, double left, double top, double right, double bottom) {}
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {}
 
   void onLayoutChange(double left, double top, double right, double bottom, double oldLeft, double oldTop,
       double oldRight, double oldBottom) {}
@@ -395,14 +391,6 @@ abstract class ChartView with ViewFrame {
   ///是否忽略索引分配
   bool ignoreAllocateDataIndex() {
     return false;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
-
-  @override
-  bool operator ==(Object other) {
-    return other is ChartView && other.id == id;
   }
 
   bool get useZeroWhenMeasureSpecModeIsUnLimit => false;

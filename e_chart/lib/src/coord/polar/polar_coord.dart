@@ -32,18 +32,18 @@ class PolarCoordImpl extends PolarCoord {
   void onHoverMove(Offset local, Offset global, Offset lastLocal, Offset lastGlobal) {}
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     double size = m.min(widthSpec.size, heightSpec.size);
     size = option.radius.last.convert(size) * 2;
     var spec = MeasureSpec.exactly(size);
     for (var child in children) {
-      child.measure(spec, spec);
+      await child.measure(spec, spec);
     }
     setMeasuredDimension(size, size);
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     _center = Offset(option.center[0].convert(width), option.center[1].convert(height));
     contentBox = Rect.fromCircle(center: center, radius: width / 2);
     double size = measureWidth;
@@ -69,7 +69,7 @@ class PolarCoordImpl extends PolarCoord {
       if (c == angleAxis || c == radiusAxis) {
         continue;
       }
-      c.layout(0, 0, c.measureWidth, c.measureHeight);
+      await c.layout(0, 0, c.measureWidth, c.measureHeight);
     }
   }
 

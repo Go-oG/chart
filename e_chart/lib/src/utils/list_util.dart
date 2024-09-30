@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:e_chart/e_chart.dart';
 
 extension IterableExt<T> on Iterable<T> {
@@ -195,6 +197,14 @@ void each<T>(Iterable<T> list, void Function(T, int) call) {
   var index = 0;
   for (var item in list) {
     call.call(item, index);
+    index += 1;
+  }
+}
+
+FutureOr<void> each2<T>(Iterable<T> list, FutureOr<void> Function(T, int) call) async {
+  var index = 0;
+  for (var item in list) {
+    await call.call(item, index);
     index += 1;
   }
 }

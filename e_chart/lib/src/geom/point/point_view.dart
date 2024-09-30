@@ -54,6 +54,9 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
 
     var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
     var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
+    if (xScale == null || yScale == null) {
+      return Size.zero;
+    }
 
     var xRatio = xScale.normalize(node.getRawData(Dim.x));
     var yRatio = yScale.normalize(node.getRawData(Dim.y));

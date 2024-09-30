@@ -42,12 +42,13 @@ class TitleView extends ChartView {
   }
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     if (title.isEmpty) {
-      return Size.zero;
+      setMeasuredDimension(0,0);
+      return;
     }
     Size size = title.getTextSize(style.textStyle);
-    return size;
+   setMeasuredDimension(size.width, size.height);
   }
 
   @override

@@ -61,7 +61,7 @@ abstract class AxisView<T extends BaseAxis, Attr extends AxisAttrs, C extends Co
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom) async {
     _updateRender();
   }
 

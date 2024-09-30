@@ -22,10 +22,6 @@ class ParallelCoordImpl extends ParallelCoord {
     super.onDispose();
     _axisMap = {};
   }
-
-  @override
-  bool get enableScale => false;
-
   ///找到离点击点最近的轴
   ParallelAxisView? findMinDistanceAxis(Offset offset) {
     ParallelAxisView? node;
@@ -78,7 +74,7 @@ class ParallelCoordImpl extends ParallelCoord {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom) async {
     final double leftOffset = layoutParams.leftPadding;
     final double topOffset = layoutParams.topPadding;
     final double rightOffset = layoutParams.rightPadding;
@@ -157,7 +153,7 @@ class ParallelCoordImpl extends ParallelCoord {
 
     for (var ele in children) {
       if (ele is! AxisView) {
-        ele.layout(0, 0, width, height);
+       await ele.layout(0, 0, width, height);
       }
     }
   }

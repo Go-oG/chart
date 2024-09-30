@@ -10,7 +10,7 @@ class YAxisImpl extends XAxisImpl {
   BaseScale get axisScale => context.dataManager.getAxisScale(coord.id, AxisDim.of(Dim.y, axisIndex));
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec)async {
     if (!axis.show) {
       setMeasuredDimension(0, heightSpec.size);
       return;

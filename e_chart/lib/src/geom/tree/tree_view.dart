@@ -28,9 +28,9 @@ class TreeView extends AnimateGeomView<TreeGeom> {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async{
     var ss=transform;
-    ss.onLayout(context, this, viewNotifier, geom.nodeList(context));
+   await ss.onLayout(context, this, viewNotifier, geom.nodeList(context));
     rootNode = ss.root;
   }
 

@@ -6,10 +6,10 @@ class XAxisImpl extends BaseGridAxisImpl {
   XAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
 
   @override
-  BaseScale get axisScale => context.dataManager.getAxisScale(coord.id, AxisDim.of(Dim.x, axisIndex));
+  BaseScale get axisScale => context.dataManager.getAxisScale(coord.option.id, AxisDim.of(Dim.x, axisIndex));
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     if (!axis.show) {
       setMeasuredDimension(widthSpec.size, 0);
       return;

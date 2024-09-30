@@ -1,4 +1,3 @@
-import 'package:e_chart/e_chart.dart';
 import 'package:flutter/material.dart';
 
 mixin class Disposable {
@@ -6,7 +5,7 @@ mixin class Disposable {
 
   bool get isDispose => _disposeFlag;
 
-  final SafeList<VoidCallback> _disposeListener = SafeList();
+  final List<VoidCallback> _disposeListener = [];
 
   void addDisposeListener(VoidCallback listener) {
     _disposeListener.add(listener);
@@ -19,9 +18,9 @@ mixin class Disposable {
   @mustCallSuper
   void dispose() {
     _disposeFlag = true;
-    _disposeListener.each((item) {
+    for (var item in _disposeListener) {
       item.call();
-    });
+    }
     _disposeListener.clear();
   }
 }

@@ -108,7 +108,7 @@ class OverlayViewGroup extends ChartViewGroup {
   }
 
   @override
-  void onLayout(bool changed, double l, double t, double r, double b) {
+  Future<void> onLayout(bool changed, double l, double t, double r, double b) async {
 // Noop: children are positioned absolutely
   }
 

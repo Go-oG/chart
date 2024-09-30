@@ -8,7 +8,7 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
   BaseGridAxisImpl(this.direction, super.context, super.axis, super.coord, {super.axisIndex});
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom)async {
     if (direction.isHorizontal()) {
       axisScale.changeRange([0, right - left]);
     } else {

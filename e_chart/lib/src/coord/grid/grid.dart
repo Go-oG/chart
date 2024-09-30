@@ -21,17 +21,15 @@ class Grid extends Coord {
     super.freeDrag,
     super.freeLongPress,
   }) {
-    this.xAxisList = xAxisList ?? [XAxis(type: AxisType.category)];
-    this.yAxisList = yAxisList ?? [YAxis()];
+    this.xAxisList = xAxisList ?? [const XAxis(type: AxisType.category)];
+    this.yAxisList = yAxisList ?? [const YAxis()];
   }
 
   @override
   CoordType get type => CoordType.grid;
 
   @override
-  CoordView<Coord>? toCoord(Context context) {
-    return GridCoordImpl(context, this);
-  }
+  CoordView<Coord>? toCoord(Context context)=>GridCoordImpl(context, this);
 
   @override
   List<AxisDim> get allAxisDim {

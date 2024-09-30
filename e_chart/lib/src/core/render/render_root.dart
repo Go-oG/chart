@@ -71,6 +71,10 @@ final class RenderRoot extends RenderBox implements ViewParent {
     super.attach(owner);
     _context?.attach();
     _context?.gestureDispatcher.enable();
+
+    markNeedsCompositingBitsUpdate();
+    markNeedsSemanticsUpdate();
+    markNeedsLayout();
   }
 
   @override
@@ -107,15 +111,22 @@ final class RenderRoot extends RenderBox implements ViewParent {
     super.performLayout();
     double w = size.width;
     double h = size.height;
-    measure(w, h);
-    _context?.viewManager.rootView?.layout(0, 0, w, h);
+    _layoutView(w, h);
   }
 
-  void measure(double parentWidth, double parentHeight) {
+  void _layoutView(double w, double h) async {
+    if (_context?.dataIsReady ?? false) {
+      await measure(w, h);
+      await _context?.viewManager.rootView?.layout(0, 0, w, h);
+      requestDraw();
+    }
+  }
+
+  Future<void> measure(double parentWidth, double parentHeight) async {
     _context?.animateManager.cancelAllAnimator();
     var widthSpec = MeasureSpec.exactly(parentWidth);
     var heightSpec = MeasureSpec.exactly(parentHeight);
-    _context?.viewManager.rootView?.measure(widthSpec, heightSpec);
+    await _context?.viewManager.rootView?.measure(widthSpec, heightSpec);
     bound = Rect.fromLTWH(0, 0, parentWidth, parentHeight);
   }
 
@@ -169,6 +180,7 @@ final class RenderRoot extends RenderBox implements ViewParent {
 
   @override
   void requestLayout() {
+    markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
     markNeedsLayout();
   }

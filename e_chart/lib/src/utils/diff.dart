@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -38,11 +39,11 @@ class DiffUtil {
   }
 
   ///执行Diff动画相关
-  static List<AnimationNode> diff<D extends DataNode>(
+  static Future<List<AnimationNode>> diff<D extends DataNode>(
     AnimateOption? option,
     Iterable<D> oldList,
     Iterable<D> newList,
-    void Function(List<D> dataList) layoutFun,
+    FutureOr<void> Function(List<D> dataList) layoutFun,
     Attrs Function(D data, DiffType type) startFun,
     Attrs Function(D data, DiffType type) endFun,
     void Function(D data, Attrs s, Attrs e, double t, DiffType type) lerpFun,
@@ -52,7 +53,7 @@ class DiffUtil {
     void Function(List<D> removeList)? removeDataCall,
     void Function(DiffResult<D> diffInfo)? diffInfoCall,
     bool forceUseUpdate = false,
-  }) {
+  }) async {
     if (oldList.isEmpty && newList.isEmpty) {
       onStart?.call();
       updateCall.call([], 1);
@@ -66,7 +67,7 @@ class DiffUtil {
     });
 
     if (option == null) {
-      layoutFun.call(newList2);
+      await layoutFun.call(newList2);
       onStart?.call();
       updateCall.call(newList2, 1);
       onEnd?.call();
@@ -100,7 +101,7 @@ class DiffUtil {
     layoutData.sort((a, b) {
       return a.dataIndex.compareTo(b.dataIndex);
     });
-    layoutFun.call(layoutData);
+    await layoutFun.call(layoutData);
 
     ///再次存储相关动画属性
     diffResult.addSet.each((data, p1) {
@@ -188,18 +189,18 @@ class DiffUtil {
     return nl;
   }
 
-  static List<AnimationNode> diff2<D extends DataNode>(
+  static Future<List<AnimationNode>> diff2<D extends DataNode>(
     LerpBuilder lerp,
     Iterable<D> oldList,
     Iterable<D> newList,
-    void Function(List<D> dataList) layoutFun,
+    FutureOr<void> Function(List<D> dataList) layoutFun,
     void Function(List<D> dataList, double t) updateCall, {
     VoidCallback? onStart,
     VoidCallback? onEnd,
     void Function(List<D> removeList)? removeDataCall,
     void Function(DiffResult<D> diffInfo)? diffInfoCall,
     bool forceUseUpdate = false,
-  }) {
+  }) async {
     return diff(
       lerp.option,
       oldList,

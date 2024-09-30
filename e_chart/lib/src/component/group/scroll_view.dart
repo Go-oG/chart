@@ -8,11 +8,10 @@ class ScrollLayout extends ChartViewGroup {
   ScrollLayout(super.context);
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async{
     if (children.length > 1) {
       throw ChartError("只能有一个View");
     }
-    var parentWidth = widthSpec.size;
     var parentHeight = heightSpec.size;
 
     var child = children.first;
@@ -27,7 +26,8 @@ class ScrollLayout extends ChartViewGroup {
     } else {
       size = Size(cw, ch);
     }
-    return size;
+    setMeasuredDimension(size.width, size.height);
+    return ;
   }
 
   bool drawSelf(Canvas2 canvas, ChartViewGroup parent) {
@@ -39,8 +39,6 @@ class ScrollLayout extends ChartViewGroup {
     return false;
   }
 
-  @override
-  bool get enableDrag => true;
 
   @override
   void onDragMove(Offset local, Offset global, Offset diff) {

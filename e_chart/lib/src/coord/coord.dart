@@ -86,11 +86,12 @@ abstract class CoordView<T extends Coord> extends ChartViewGroup {
 
   BrushView? _brushView;
 
-
-  CoordView(super.context, T props) : super(id: props.id) {
+  CoordView(super.context, T props) {
     _option = props;
     layoutParams = props.layoutParams;
   }
+
+  String get id => option.id;
 
   CoordType get coordType => option.type;
 
@@ -174,21 +175,6 @@ abstract class CoordView<T extends Coord> extends ChartViewGroup {
   }
 
   @override
-  bool get enableHover => true;
-
-  @override
-  bool get enableDrag => true;
-
-  @override
-  bool get enableClick => true;
-
-  @override
-  bool get enableScale => true;
-
-  @override
-  bool get enableLongPress => true;
-
-  @override
   bool get canFreeDrag => option.freeDrag;
 
   @override
@@ -244,16 +230,13 @@ abstract class CoordView<T extends Coord> extends ChartViewGroup {
   ///返回其对应的坐标点位置
   double convert(AxisDim dim, double ratio);
 
-  // ///给定一个坐标维度和数值
-  // ///返回其对应的坐标维多的位置
-  // double convert2(AxisDim dim, dynamic value);
 }
 
 abstract class CircleCoordLayout<T extends CircleCoord> extends CoordView<T> {
   CircleCoordLayout(super.context, super.props);
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     double w = widthSpec.size;
     double h = heightSpec.size;
     double d = option.radius.last.convert(min(w, h));
@@ -261,9 +244,9 @@ abstract class CircleCoordLayout<T extends CircleCoord> extends CoordView<T> {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     for (var child in children) {
-      child.layout(0, 0, width, height);
+      await child.layout(0, 0, width, height);
     }
   }
 }

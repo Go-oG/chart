@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as m;
 
 import 'package:e_chart/e_chart.dart';
@@ -36,7 +37,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     var parentWidth = widthSpec.size;
     var parentHeight = heightSpec.size;
 
@@ -61,7 +62,7 @@ class GridCoordImpl extends GridCoord {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     left = layoutParams.leftPadding;
     top = layoutParams.topPadding;
     bottom = height - layoutParams.bottomPadding;
@@ -98,10 +99,10 @@ class GridCoordImpl extends GridCoord {
     List<CoordChild> childList = getCoordChildList();
 
     ///布局X轴
-    layoutXAxis(childList, contentBox);
+    await layoutXAxis(childList, contentBox);
 
     ///布局Y轴
-    layoutYAxis(childList, contentBox);
+    await layoutYAxis(childList, contentBox);
 
     viewPort.setAreaAndValue(contentBox);
 
@@ -141,12 +142,12 @@ class GridCoordImpl extends GridCoord {
       } else {
         bb = tt + view.height;
       }
-      view.layout(ll, tt, rr, bb);
+      await view.layout(ll, tt, rr, bb);
     }
   }
 
   ///布局X轴
-  void layoutXAxis(List<CoordChild> childList, Rect contentBox) {
+  FutureOr<void> layoutXAxis(List<CoordChild> childList, Rect contentBox) async {
     List<XAxisImpl> topList = [];
     List<XAxisImpl> bottomList = [];
 
@@ -179,7 +180,7 @@ class GridCoordImpl extends GridCoord {
     });
 
     double bottomOffset = contentBox.bottom;
-    each(bottomList, (axis, i) {
+    for (var axis in bottomList) {
       var h = axis.measureHeight;
       var rect = Rect.fromLTWH(contentBox.left, bottomOffset, contentBox.width, h);
       var attrs = axis.attrs.copy() as GridAxisAttr;
@@ -192,11 +193,11 @@ class GridCoordImpl extends GridCoord {
       attrs.rect = rect;
 
       bottomOffset += (h + axis.axis.offset);
-      axis.layout(rect.left, rect.top, rect.right, rect.bottom);
-    });
+      await axis.layout(rect.left, rect.top, rect.right, rect.bottom);
+    }
   }
 
-  void layoutYAxis(List<CoordChild> childList, Rect contentBox) {
+  FutureOr<void> layoutYAxis(List<CoordChild> childList, Rect contentBox) async {
     List<YAxisImpl> leftList = [];
     List<YAxisImpl> rightList = [];
 
@@ -239,9 +240,10 @@ class GridCoordImpl extends GridCoord {
         splitCount = value.axisScale.tickCount - 1;
       }
     });
-
     double leftOffset = contentBox.right;
-    each(rightList, (value, i) {
+
+    int i = 0;
+    for (var value in rightList) {
       if (i != 0) {
         leftOffset += value.axis.offset;
       }
@@ -257,12 +259,12 @@ class GridCoordImpl extends GridCoord {
       attrs.rect = rect;
       leftOffset += w;
       value.attrs = attrs;
-
-      value.layout(rect.left, rect.top, rect.right, rect.bottom);
+      await value.layout(rect.left, rect.top, rect.right, rect.bottom);
       if (needAlignTick && splitCount == null && i == 0) {
         splitCount = value.axisScale.tickCount - 1;
       }
-    });
+      i++;
+    }
   }
 
   @override

@@ -33,18 +33,18 @@ class RadarCoordImpl extends RadarCoord {
   }
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     var size = min(widthSpec.size, heightSpec.size);
     double cv = option.radius.last.convert(size);
     cv = min(cv, size) * 2;
     var spec = MeasureSpec.exactly(cv);
     for (var child in children) {
-      child.measure(spec, spec);
+      await child.measure(spec, spec);
     }
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     _center = Offset(option.center[0].convert(width), option.center[1].convert(height));
 
     double itemAngle = 360 / option.indicator.length;
@@ -55,7 +55,8 @@ class RadarCoordImpl extends RadarCoord {
 
     ///布局Axis
     num oa = option.offsetAngle;
-    each(option.indicator, (p0, i) {
+
+    each2(option.indicator, (p0, i) async {
       var axis = axisMap[p0]!;
       double angle = oa + i * itemAngle;
       Offset o = circlePoint(radius, angle, center);
@@ -65,9 +66,10 @@ class RadarCoordImpl extends RadarCoord {
       attrs.start = center;
       attrs.end = o;
       axis.attrs = attrs;
-      axis.layout(center.dx - axis.width / 2, center.dy - axis.height / 2, center.dx + axis.width / 2,
+      await axis.layout(center.dx - axis.width / 2, center.dy - axis.height / 2, center.dx + axis.width / 2,
           center.dy + axis.height / 2);
     });
+
     double rInterval = radius / option.splitNumber;
     int axisCount = option.indicator.length;
 
@@ -97,7 +99,7 @@ class RadarCoordImpl extends RadarCoord {
 
     ///布局孩子
     for (var child in children) {
-      child.layout(0, 0, width, height);
+      await child.layout(0, 0, width, height);
     }
   }
 

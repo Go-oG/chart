@@ -120,7 +120,6 @@ final class DataManager extends Disposable {
 
     ///归一化数据
     _nodeNormalize(context, nodeMap.values, axisMap);
-
     _coordMap = coordMap;
     _nodeMap = nodeMap;
     _nodeCatMap = divisionMap;

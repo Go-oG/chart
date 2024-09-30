@@ -1,13 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/rendering.dart';
 
-import '../../data/state.dart';
-
 /// ViewGroup
 abstract class ChartViewGroup extends GestureView implements ViewParent {
-  ChartViewGroup(super.context, {super.id});
+  ChartViewGroup(super.context);
 
   List<ChartView> _children = [];
 
@@ -75,7 +74,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   ///=========布局测量相关============
   ///(模拟FrameLayout)
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     final bool measureMatchParentChildren = widthSpec.mode != SpecMode.exactly || heightSpec.mode != SpecMode.exactly;
 
     List<ChartView> matchParentChildren = [];
@@ -119,7 +118,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
       } else {
         childHeightMeasureSpec = getChildMeasureSpec(heightSpec, lp.vPadding + lp.vMargin, lp.height);
       }
-      child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+      await child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
     }
 
     setMeasuredDimension(maxWidth, maxHeight);
@@ -182,7 +181,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     final parentLeft = layoutParams.leftPadding;
     final parentRight = right - left - layoutParams.rightPadding;
     final parentTop = layoutParams.topPadding;
@@ -220,7 +219,7 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
         childTop = parentTop + lp.topMargin;
       }
 
-      child.layout(childLeft, childTop, childLeft + width, childTop + height);
+      await child.layout(childLeft, childTop, childLeft + width, childTop + height);
     }
   }
 
@@ -330,18 +329,6 @@ abstract class ChartViewGroup extends GestureView implements ViewParent {
   void clearChildren() {
     _children = [];
   }
-
-  @override
-  bool get enableClick => false;
-
-  @override
-  bool get enableDrag => false;
-
-  @override
-  bool get enableHover => false;
-
-  @override
-  bool get enableScale => false;
 
   @override
   int allocateDataIndex(int index) {

@@ -8,7 +8,7 @@ class AngleAxisView extends AxisView<AngleAxis, AngleAxisAttrs, PolarCoord> {
   AngleAxisView(super.context, super.axis, super.coord, {super.axisIndex});
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async{
     var size = min(widthSpec.size, heightSpec.size);
     setMeasuredDimension(size, size);
   }

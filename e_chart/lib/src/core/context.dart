@@ -33,6 +33,10 @@ class Context with Disposable {
   late DataManager dataManager;
   late ViewManager viewManager;
 
+  bool _dataIsReady = false;
+
+  bool get dataIsReady => _dataIsReady;
+
   Context(this._option, TickerProvider provider, [this.devicePixelRatio = 1]) {
     _provider = provider;
     _animateManager = AnimateManager(provider);
@@ -47,10 +51,11 @@ class Context with Disposable {
     dataManager = DataManager();
     viewManager = ViewManager();
     viewManager.parse(this, option);
-
     dataManager.parse(this, option.coordList, option.geoms).then((v) {
+      _dataIsReady = true;
       viewManager.rootView?.requestLayout();
     }).catchError((error) {
+      _dataIsReady = false;
       viewManager.rootView?.requestLayout();
     });
   }

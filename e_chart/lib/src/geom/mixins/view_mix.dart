@@ -58,7 +58,7 @@ mixin ViewNodeEventMix on ChartView {
     if (!context.hasEventListener(EventType.viewTranslation)) {
       return;
     }
-    _translationEvent ??= ViewTranslationEvent(geom, id, translationX, translationY);
+    _translationEvent ??= ViewTranslationEvent(geom,  translationX, translationY);
     _translationEvent!.translationX = translationX;
     _translationEvent!.translationY = translationY;
     context.dispatchEvent(_translationEvent!);
@@ -70,7 +70,7 @@ mixin ViewNodeEventMix on ChartView {
     if (!context.hasEventListener(EventType.viewScale)) {
       return;
     }
-    _scaleEvent ??= ViewScaleEvent(geom, id, 1, 0, 0);
+    _scaleEvent ??= ViewScaleEvent(geom,  1, 0, 0);
     _scaleEvent!.zoom = zoom;
     _scaleEvent!.originY = originY;
     _scaleEvent!.originX = originX;

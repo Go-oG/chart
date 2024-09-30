@@ -17,7 +17,7 @@ class FlexLayout extends ChartViewGroup {
   });
 
   @override
-  Size onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async{
     for (var c in children) {
       c.measure(widthSpec, heightSpec);
     }
@@ -46,11 +46,11 @@ class FlexLayout extends ChartViewGroup {
         w = m.max(maxW, w);
       }
     }
-    return Size(w.toDouble(), h.toDouble());
+    setMeasuredDimension(w.toDouble(), h.toDouble());
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom)async {
     List<List<ChartView>> vl = splitView(width, height);
     double l = 0;
     double y = direction == Direction.vertical ? height : 0;

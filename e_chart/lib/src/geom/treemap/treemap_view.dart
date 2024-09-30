@@ -12,12 +12,12 @@ class TreeMapView extends AnimateGeomView<TreeMapGeom> {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     var rootNode = geom.getTree(context);
     if (rootNode == null) {
       return;
     }
-    geom.transform.transform(context, width, height, rootNode);
+    await geom.transform.transform(context, width, height, rootNode);
     this.rootNode = rootNode;
   }
 

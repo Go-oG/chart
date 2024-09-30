@@ -10,7 +10,7 @@ abstract class GestureView extends ChartView {
   final Map<GestureType, bool> _gestureEnableMap = {};
 
   ChartGesture? _gesture;
-  GestureView(super.context, {super.id});
+  GestureView(super.context);
 
   Pair<Offset, Offset> _lastHover = Pair(Offset.zero, Offset.zero);
   Offset _lastDrag = Offset.zero;

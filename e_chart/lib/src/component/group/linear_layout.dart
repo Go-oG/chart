@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
 
-import '../../data/state.dart';
 
 class LinearLayout extends ChartViewGroup {
   late Direction _direction;
@@ -22,7 +21,7 @@ class LinearLayout extends ChartViewGroup {
   }
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     if (_direction == Direction.vertical) {
       measureVertical(widthSpec, heightSpec);
     } else {
@@ -232,7 +231,7 @@ class LinearLayout extends ChartViewGroup {
   }
 
   @override
-  void onLayout(bool changed, double left, double top, double right, double bottom) {
+  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom)async {
     double offset = direction == Direction.vertical ? layoutParams.topPadding : layoutParams.leftPadding;
     var plp = layoutParams;
     for (var c in children) {

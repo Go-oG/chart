@@ -4,12 +4,11 @@ class ViewScaleEvent extends ChartEvent {
   Geom? _geom;
 
   Geom? get geom => _geom;
-  final String viewId;
   double zoom;
   double originX;
   double originY;
 
-  ViewScaleEvent(Geom geom, this.viewId, this.zoom, this.originX, this.originY) {
+  ViewScaleEvent(Geom geom, this.zoom, this.originX, this.originY) {
     _geom = geom;
   }
 
@@ -25,14 +24,11 @@ class ViewScaleEvent extends ChartEvent {
 
 class ViewTranslationEvent extends ChartEvent {
   Geom? _series;
-
   Geom? get series => _series;
-
-  final String viewId;
   double translationX;
   double translationY;
 
-  ViewTranslationEvent(Geom series, this.viewId, this.translationX, this.translationY) {
+  ViewTranslationEvent(Geom series, this.translationX, this.translationY) {
     _series = series;
   }
 

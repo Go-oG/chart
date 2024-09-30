@@ -352,8 +352,8 @@ class LogConfig {
 
   PrintFilter? _filter;
 
-  int _stackOffset = 0;
-  int _methodCount = 2;
+  int _stackOffset = 2;
+  int _methodCount = 4;
   int _lineMaxLength = 120; //每行最多显示多少
   int _maxFileLength = 2 * 1024 * 1024 * 1024;
 

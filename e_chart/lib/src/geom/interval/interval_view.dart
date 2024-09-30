@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-
 class IntervalView extends AnimateGeomView<IntervalGeom> {
   late DataStore<DataNode> _xStore;
   late DataStore<DataNode> _yStore;
@@ -27,17 +27,14 @@ class IntervalView extends AnimateGeomView<IntervalGeom> {
     if (coord is! GridCoord && coord is! PolarCoord) {
       throw UnsupportedError("Interval Geom only support  GridCoord and PolarCoord");
     }
-
+    var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
+    var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
     var x = node.normalize.get(Dim.x);
-
     var y = node.normalize.get(Dim.y);
-
     if (coord is GridCoord) {
       List<double> xList = x.map((e) => coord.convert(node.xAxisDim, e)).toList();
       List<double> yList = y.map((e) => coord.convert(node.yAxisDim, e)).toList();
       if (xList.length <= 1 || yList.length <= 1) {
-        var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
-        var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
         if (yScale.isCategory) {
           if (xList.length <= 1) {
             xList = [xScale.range.first, xList.first];
@@ -56,13 +53,10 @@ class IntervalView extends AnimateGeomView<IntervalGeom> {
       }
       return RectLayoutResult(left: xList.first, top: yList.first, right: xList.last, bottom: yList.last);
     }
-
     if (coord is PolarCoord) {
       List<double> xList = x.map((e) => coord.convert(node.xAxisDim, e)).toList();
       List<double> yList = y.map((e) => coord.convert(node.yAxisDim, e)).toList();
       if (xList.length <= 1 || yList.length <= 1) {
-        var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
-        var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
         if (yScale.isCategory) {
           if (xList.length <= 1) {
             xList = [xScale.range.first, xList.first];
@@ -90,18 +84,19 @@ class IntervalView extends AnimateGeomView<IntervalGeom> {
       result.padAngle = 0;
       return result;
     }
+
     return const LayoutResult();
   }
 
   @override
-  FutureOr<List<DataNode>> onClipPendingLayoutNodes(List<DataNode> newTotalDataSet) {
+  Future<List<DataNode>> onClipPendingLayoutNodes(List<DataNode> newTotalDataSet) async {
     var coord = findCoordView();
     if (coord is! GridCoord) {
       return newTotalDataSet;
     }
+    var yScale = context.dataManager.getAxisScale(geom.coordId, geom.yPos.axisDim);
     _xStore.parse(newTotalDataSet);
     _yStore.parse(newTotalDataSet);
-    var yScale = context.dataManager.getAxisScale(geom.coordId, geom.yPos.axisDim);
     AxisDim dim;
     DataStore<DataNode> store;
     if (yScale.isCategory) {
@@ -116,18 +111,18 @@ class IntervalView extends AnimateGeomView<IntervalGeom> {
   }
 
   @override
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
+    for (var node in nodeList) {
+      RectLayoutResult ll = node.layoutResult as RectLayoutResult;
+      node.shape = CRect(left: ll.left, top: ll.top, right: ll.right, bottom: ll.bottom);
+      node.style.fillStyle=AreaStyle(color: randomColor());
+    }
+  }
+
+  @override
   AnimateOption? getAnimateOption(LayoutType type, [int objCount = -1]) {
     // TODO: 先忽略动画相关的
     return null;
   }
 
-  @override
-  Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
-    return Attrs();
-  }
-
-  @override
-  Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
-    return Attrs();
-  }
 }

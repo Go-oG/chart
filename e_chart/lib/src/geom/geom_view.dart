@@ -83,7 +83,7 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   }
 
   @override
-  void onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) {
+  Future<void> onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
     setMeasuredDimension(widthSpec.size, heightSpec.size);
   }
 
@@ -101,7 +101,6 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   @override
   void onDraw(Canvas2 canvas) {
     super.onDraw(canvas);
-
     if (firstDrawCombineShape) {
       for (var shape in combineShapeList) {
         shape.style.render(canvas, mPaint, shape.shape);
@@ -261,7 +260,7 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   ///否则 执行默认的布局方式
   ///默认布局方式动画更新
   @override
-  FutureOr<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     var pair = await _loadNewLayoutDataNodeSet();
     var newList = pair.first;
     var newLayoutList = pair.second;
@@ -281,16 +280,16 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     //保存完整的布局节点
     setNodeSet(newList);
 
-    var an = DiffUtil.diff(
+    var an =await DiffUtil.diff(
       getAnimateOption(LayoutType.layout, oldList.length + newLayoutList.length),
       oldList,
       newLayoutList,
       (nodeList) {
         ///更新显示的节点
-        showNodeSet.setAll(nodeList);
         onLayoutNodeStart(nodeList);
         onLayoutNodeList(nodeList);
         onLayoutNodeEnd(nodeList);
+        showNodeSet.setAll(nodeList);
       },
       onBuildAnimateStarAttrs,
       onBuildAnimateEndAttrs,
