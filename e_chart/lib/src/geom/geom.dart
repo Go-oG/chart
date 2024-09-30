@@ -65,6 +65,11 @@ abstract class Geom extends ViewNotifier with GeomMix,TransformMix {
     return DataNode(this, data, value: value);
   }
 
+
+  List<DataNode> nodeList(Context context) {
+   return context.dataManager.getNodesByGeom(coordId, geomType);
+  }
+
   ///尝试获取单一Value值
   ///一般情况下该方法用于只有单个数据值的对象
   double? tryGetValue(RawData data) {

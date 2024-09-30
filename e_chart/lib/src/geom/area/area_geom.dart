@@ -1,12 +1,12 @@
 import 'package:e_chart/e_chart.dart';
 
-class AreaGeom extends PointGeom {
-  double smooth = 0;
-
+class AreaGeom extends PathGeom {
   AreaGeom(
     super.dataSet,
     super.coordId, {
-    this.smooth = 0,
+    super.smooth,
+    super.dashList,
+    super.disDiff,
     super.tooltip,
     super.animation,
     super.backgroundColor,
@@ -17,9 +17,7 @@ class AreaGeom extends PointGeom {
   });
 
   @override
-  ChartView? toView(Context context) {
-    return AreaView(context, this);
-  }
+  ChartView? toView(Context context)=>AreaView(context, this);
 
   @override
   GeomType get geomType => GeomType.area;

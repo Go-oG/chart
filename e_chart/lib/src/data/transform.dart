@@ -4,8 +4,8 @@ import 'dart:ui';
 import 'package:e_chart/e_chart.dart';
 
 mixin class TransformMix {
-  final SafeList<DataTransform> _dataTransformList = SafeList();
-  final SafeList<LayoutTransform> _layoutTransformList = SafeList();
+  final List<DataTransform> _dataTransformList = [];
+  final List<LayoutTransform> _layoutTransformList = [];
 
   void addDataTransform(DataTransform transform) {
     _dataTransformList.add(transform);
@@ -15,11 +15,11 @@ mixin class TransformMix {
     _dataTransformList.remove(transform);
   }
 
-  void addDataLayoutTransform(LayoutTransform transform) {
+  void addLayoutTransform(LayoutTransform transform) {
     _layoutTransformList.add(transform);
   }
 
-  void removeDataLayoutTransform(LayoutTransform transform) {
+  void removeLayoutTransform(LayoutTransform transform) {
     _layoutTransformList.remove(transform);
   }
 
@@ -31,9 +31,9 @@ mixin class TransformMix {
     _layoutTransformList.clear();
   }
 
-  List<DataTransform> get dataTransformList => _dataTransformList.toList();
+  List<DataTransform> get dataTransformList => _dataTransformList;
 
-  List<LayoutTransform> get layoutTransformList => _layoutTransformList.toList();
+  List<LayoutTransform> get layoutTransformList => _layoutTransformList;
 }
 
 abstract class DataTransform extends Disposable {
@@ -157,6 +157,7 @@ abstract class HierarchyTransform extends LayoutTransform {
       return;
     }
     var tt = toTree2(context, nodeList, parentFun, childFun);
+    _root = tt;
     if (tt == null) {
       return;
     }

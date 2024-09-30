@@ -4,7 +4,6 @@ import '../../../e_chart.dart';
 class PathGeom extends PointGeom {
   double smooth = 0;
   List<double>? dashList;
-
   double disDiff = 2;
 
   PathGeom(

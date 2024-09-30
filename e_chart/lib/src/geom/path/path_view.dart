@@ -2,11 +2,12 @@ import 'dart:ui';
 
 import '../../../e_chart.dart';
 
-class PathView extends PointView<PathGeom> {
-  PathView(super.context, super.series);
+class PathView<T extends PathGeom> extends PointView<T> {
+  PathView(super.context, super.geom);
 
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList) {
+    super.onLayoutNodeEnd(nodeList);
     mergePath(nodeList);
   }
 
@@ -59,8 +60,6 @@ class PathView extends PointView<PathGeom> {
   }
 
   void sortGroupList(List<DataNode> list) {
-    list.sort((a, b) {
-      return a.globalIndex.compareTo(b.globalIndex);
-    });
+
   }
 }

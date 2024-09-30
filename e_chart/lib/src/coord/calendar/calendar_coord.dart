@@ -311,30 +311,35 @@ class CalendarCoordImpl extends CalendarCoord {
   double convert(AxisDim dim, double ratio) {
     int dayCount = _startTime.diffDay(_endTime).abs();
     if (dayCount <= 0) {
-      return convert2(dim, _startTime);
+      var rect=convert2(_startTime);
+      if(dim.isCol){
+        return rect.centerX;
+      }
+      return rect.centerY;
     }
     var c = (dayCount * ratio).round();
-    return convert2(dim, _startTime.add(Duration(days: c)));
+    var rect= convert2(_startTime.add(Duration(days: c)));
+    if(dim.isCol){
+      return rect.centerX;
+    }
+    return rect.centerY;
   }
 
   @override
-  double convert2(AxisDim dim, dynamic time) {
+  Rect convert2(DateTime time) {
     time = time.first();
     var node = _nodeMap[key(time)];
     if (node == null) {
       throw ChartError('当前给定的日期不在范围内');
     }
-    if (dim.isRow) {
-      return node.rect.centerX;
-    }
-    return node.rect.centerY;
+    return node.rect;
   }
 }
 
 abstract class CalendarCoord extends CoordView<Calendar> {
   CalendarCoord(super.context, super.props);
 
-  double convert2(AxisDim dim, dynamic time);
+  Rect convert2(DateTime time);
 
   int get rowCount;
 

@@ -102,15 +102,25 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   void onDraw(Canvas2 canvas) {
     super.onDraw(canvas);
 
-    for (var shape in combineShapeList) {
-      shape.style.render(canvas, mPaint, shape.shape);
-    }
-
-    ///TODO 等待更改
-    for (var node in showNodeSet.nodeList) {
-      node.shape.render(canvas, mPaint, AreaStyle(color: randomColor()));
+    if (firstDrawCombineShape) {
+      for (var shape in combineShapeList) {
+        shape.style.render(canvas, mPaint, shape.shape);
+      }
+      for (var node in showNodeSet.nodeList) {
+        node.style.render(canvas, mPaint, node.shape);
+      }
+    } else {
+      for (var node in showNodeSet.nodeList) {
+        node.style.render(canvas, mPaint, node.shape);
+      }
+      for (var shape in combineShapeList) {
+        shape.style.render(canvas, mPaint, shape.shape);
+      }
     }
   }
+
+  ///控制是否优先绘制组合shape
+  bool get firstDrawCombineShape => true;
 
   @override
   void onDragMove(Offset local, Offset global, Offset diff) {
@@ -204,11 +214,12 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   }
 
   ///获取视图中间点
-  Offset centerPosition(List<SNumber> center) {
+  Offset viewCenter(List<SNumber> center) {
     return Offset(center.first.convert(width), center.last.convert(height));
   }
 
   ///标识是否在动画中
+  @protected
   bool inAnimation = false;
 
   ///获取动画相关配置
@@ -235,6 +246,7 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
 
     return view;
   }
+
 }
 
 final class CombineShape {
@@ -247,7 +259,7 @@ final class CombineShape {
 
 }
 
-///拥有动画效果的GeomView
+///拥有动画效果通用GeomView
 abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   AnimateGeomView(super.context, super.geom);
 
@@ -359,7 +371,9 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
   }
 
   ///更新节点动画属性
-  void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {}
+  void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {
+    node.fillFromAttr(s.lerp(e, t));
+  }
 
   /// 当一次动画帧更新时所有节点都已更新后回调
   void onAnimateFrameUpdate(List<DataNode> list, double t) {
@@ -375,3 +389,6 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     updateShowNodeSet();
   }
 }
+
+
+

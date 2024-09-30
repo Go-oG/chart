@@ -4,7 +4,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///用于绘制点集视图
 class PointView<T extends PointGeom> extends BasePointView<T> {
-  PointView(super.context, super.series);
+  PointView(super.context, super.geom);
 
   @override
   LayoutResult layoutSingleNode(CoordView coord, DataNode node) {
@@ -16,13 +16,12 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
       if (time == null) {
         throw ArgumentError("time is null");
       }
-      var x = coord.convert(node.xAxisDim, xData.first);
-      var y = coord.convert(node.yAxisDim, yData.first);
-      return OffsetLayoutResult(x: x, y: y);
+      var rect = coord.convert2(time);
+      return RectLayoutResult(left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom);
     }
 
-    var x = (coord).convert(node.xAxisDim, xData.first);
-    var y = (coord).convert(node.yAxisDim, yData.first);
+    var x = coord.convert(node.xAxisDim, xData.first);
+    var y = coord.convert(node.yAxisDim, yData.first);
 
     if (coord is GridCoord || coord is ParallelCoord) {
       return OffsetLayoutResult(x: x, y: y);

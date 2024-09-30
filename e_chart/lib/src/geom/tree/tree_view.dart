@@ -29,11 +29,9 @@ class TreeView extends AnimateGeomView<TreeGeom> {
 
   @override
   void onLayout(bool changed, double left, double top, double right, double bottom) {
-    var rootNode = geom.getTree(context);
-    if (rootNode != null) {
-      geom.transform.transform(context, width, height, rootNode);
-      this.rootNode = rootNode;
-    }
+    var ss=transform;
+    ss.onLayout(context, this, viewNotifier, geom.nodeList(context));
+    rootNode = ss.root;
   }
 
   @override
@@ -58,9 +56,8 @@ class TreeView extends AnimateGeomView<TreeGeom> {
     var option = getAnimateOption(LayoutType.update, oldList.length);
     if (option == null) {
       data.clear();
-      geom.transform.transform(context, width, height, rootNode);
+      transform.transform(context, width, height, rootNode);
       updateShowNodeSet();
-
       requestLayout();
       return;
     }
@@ -75,7 +72,7 @@ class TreeView extends AnimateGeomView<TreeGeom> {
     });
 
     data.clear();
-    geom.transform.transform(context, width, height, rootNode);
+    transform.transform(context, width, height, rootNode);
     Map<TreeNode, Offset> newCenterMap = {};
     rootNode.each((node, index, startNode) {
       newCenterMap[node] = node.center;
@@ -172,4 +169,19 @@ class TreeView extends AnimateGeomView<TreeGeom> {
 
   @override
   void onLayoutPositionAndSize(List<DataNode> nodeList) {}
+
+  HierarchyTransform get transform{
+    List<LayoutTransform> list = geom.layoutTransformList;
+    if (list.isEmpty) {
+      throw IllegalStatusError("you must provide a layout transform");
+    }
+    if (list.length > 1) {
+      throw IllegalStatusError("layout transform only support one");
+    }
+    var ss = list.first;
+    if (ss is! HierarchyTransform) {
+      throw UnsupportedError("only support HierarchyTransform");
+    }
+    return ss;
+  }
 }

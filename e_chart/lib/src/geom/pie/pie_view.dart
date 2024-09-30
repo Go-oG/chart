@@ -34,7 +34,7 @@ class PieView extends BasePointView<PieGeom> {
       pieAngle = 360;
     }
     dir = geom.sweepAngle >= 0 ? 1 : -1;
-    center = centerPosition(geom.center);
+    center = viewCenter(geom.center);
     each(newList, (data, i) {
       maxData = max(data.value, maxData);
       minData = min(data.value, minData);
