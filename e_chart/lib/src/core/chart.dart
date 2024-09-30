@@ -1,7 +1,7 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:e_chart/src/core/widget_adapter.dart';
 import 'package:flutter/material.dart';
-import '../component/title/title_view.dart';
+import '../component/title_view.dart';
 import 'render/render_root.dart';
 
 class Chart extends StatefulWidget {

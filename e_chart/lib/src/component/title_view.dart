@@ -31,36 +31,3 @@ class ChildTitleView extends StatelessWidget {
   }
 }
 
-class TitleView extends ChartView {
-  DynamicText title;
-  LabelStyle style;
-
-  late Text2 label;
-
-  TitleView(super.context, this.title, this.style) {
-    label = Text2.of(title, style, Offset.zero, pointAlign: Alignment.topLeft);
-  }
-
-  @override
-  Future<void>  onMeasure(MeasureSpec widthSpec, MeasureSpec heightSpec) async {
-    if (title.isEmpty) {
-      setMeasuredDimension(0,0);
-      return;
-    }
-    Size size = title.getTextSize(style.textStyle);
-   setMeasuredDimension(size.width, size.height);
-  }
-
-  @override
-  void onDraw(Canvas2 canvas) {
-    label.draw(canvas, mPaint);
-  }
-
-  @override
-  void onDispose() {
-    title = DynamicText.empty;
-    style = LabelStyle.empty;
-    label = Text2();
-    super.onDispose();
-  }
-}

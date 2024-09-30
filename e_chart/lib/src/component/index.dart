@@ -24,11 +24,7 @@ export 'axis/axis_view.dart';
 
 export 'brush/brush_area.dart';
 export 'brush/brush_view.dart';
-
-export 'group/flex_layout.dart';
-export 'group/frame_layout.dart';
-export 'group/linear_layout.dart';
-
+export 'frame_layout.dart';
 export 'legend/legend_view.dart';
 
 export 'scale/nice_scale.dart';
