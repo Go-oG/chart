@@ -1,54 +1,125 @@
-import 'dart:ui';
+import 'dart:async';
 
 import 'package:e_chart/e_chart.dart';
 
-class IntervalView extends BasePointView<IntervalGeom> {
-  IntervalView(super.context, super.series);
+class IntervalView extends AnimateGeomView<IntervalGeom> {
+  late DataStore<DataNode> _xStore;
+  late DataStore<DataNode> _yStore;
+
+  IntervalView(super.context, super.series) {
+    _xStore = DataStore((e) {
+      return e.normalize.getRawData(geom, Dim.x);
+    });
+    _yStore = DataStore((e) {
+      return e.normalize.getRawData(geom, Dim.y);
+    });
+  }
 
   @override
+  void onLayoutNodeList(List<DataNode> nodeList) {
+    var coordView = findCoordView()!;
+    for (var node in nodeList) {
+      node.layoutResult = layoutSingleNode(coordView, node);
+    }
+  }
+
   LayoutResult layoutSingleNode(CoordView coord, DataNode node) {
-    if (coord is CalendarCoord) {
-      throw UnsupportedError("Interval Geom not Support in CalendarCoord");
+    if (coord is! GridCoord && coord is! PolarCoord) {
+      throw UnsupportedError("Interval Geom only support  GridCoord and PolarCoord");
     }
 
-    var x = node.getRawData(Dim.x);
-    var y = node.getRawData(Dim.y);
-    x = (coord as dynamic).convert2(node.xAxisDim, x);
-    y = (coord as dynamic).convert2(node.yAxisDim, y);
+    var x = node.normalize.get(Dim.x);
 
-    if (coord is GridCoord || coord is ParallelCoord) {
-      return OffsetLayoutResult(x: x, y: y);
+    var y = node.normalize.get(Dim.y);
+
+    if (coord is GridCoord) {
+      List<double> xList = x.map((e) => coord.convert(node.xAxisDim, e)).toList();
+      List<double> yList = y.map((e) => coord.convert(node.yAxisDim, e)).toList();
+      if (xList.length <= 1 || yList.length <= 1) {
+        var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
+        var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
+        if (yScale.isCategory) {
+          if (xList.length <= 1) {
+            xList = [xScale.range.first, xList.first];
+          }
+          if (yList.length <= 1) {
+            yList = [yList.first - yScale.bandSize / 2, yList.first + yScale.bandSize / 2];
+          }
+        } else {
+          if (xList.length <= 1) {
+            xList = [xList.first - xScale.bandSize / 2, xList.first + xScale.bandSize / 2];
+          }
+          if (yList.length <= 1) {
+            yList = [yScale.range.first, yList.first];
+          }
+        }
+      }
+      return RectLayoutResult(left: xList.first, top: yList.first, right: xList.last, bottom: yList.last);
     }
+
     if (coord is PolarCoord) {
-      return PolarLayoutResult(center: coord.center, radius: x, angle: y);
-    }
-    if (coord is RadarCoord) {
-      return PolarLayoutResult(center: coord.center, radius: x, angle: y);
-    }
-    if (coord is SingleCoord) {
-      return OffsetLayoutResult(x: x, y: 0);
+      List<double> xList = x.map((e) => coord.convert(node.xAxisDim, e)).toList();
+      List<double> yList = y.map((e) => coord.convert(node.yAxisDim, e)).toList();
+      if (xList.length <= 1 || yList.length <= 1) {
+        var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
+        var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
+        if (yScale.isCategory) {
+          if (xList.length <= 1) {
+            xList = [xScale.range.first, xList.first];
+          }
+          if (yList.length <= 1) {
+            yList = [yList.first - yScale.bandSize / 2, yList.first + yScale.bandSize / 2];
+          }
+        } else {
+          if (xList.length <= 1) {
+            xList = [xList.first - xScale.bandSize / 2, xList.first + xScale.bandSize / 2];
+          }
+          if (yList.length <= 1) {
+            yList = [yScale.range.first, yList.first];
+          }
+        }
+      }
+
+      var result = ArcLayoutResult();
+      result.center = coord.center;
+      result.innerRadius = xList.first;
+      result.outRadius = xList.last;
+      result.startAngle = yList.first;
+      result.sweepAngle = yList.last - yList.first;
+      result.cornerRadius = 0;
+      result.padAngle = 0;
+      return result;
     }
     return const LayoutResult();
   }
 
   @override
-  Size layoutSingleNodeSize(CoordView coord, DataNode node) {
-    if (coord is CalendarCoord) {
-      return coord.cellSize;
+  FutureOr<List<DataNode>> onClipPendingLayoutNodes(List<DataNode> newTotalDataSet) {
+    var coord = findCoordView();
+    if (coord is! GridCoord) {
+      return newTotalDataSet;
     }
-
-    var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
-    var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
-
-    var xRatio = xScale.normalize(node.getRawData(Dim.x));
-    var yRatio = yScale.normalize(node.getRawData(Dim.y));
-
-    var x = geom.pickSize(node, xRatio);
-    var y = geom.pickSize(node, yRatio);
-
-    return Size(x.width, y.height);
+    _xStore.parse(newTotalDataSet);
+    _yStore.parse(newTotalDataSet);
+    var yScale = context.dataManager.getAxisScale(geom.coordId, geom.yPos.axisDim);
+    AxisDim dim;
+    DataStore<DataNode> store;
+    if (yScale.isCategory) {
+      dim = geom.yPos.axisDim;
+      store = _yStore;
+    } else {
+      dim = geom.xPos.axisDim;
+      store = _xStore;
+    }
+    RangeInfo range = coord.getAxisViewportRange(dim);
+    return store.getDataByRange(range);
   }
 
+  @override
+  AnimateOption? getAnimateOption(LayoutType type, [int objCount = -1]) {
+    // TODO: 先忽略动画相关的
+    return null;
+  }
 
   @override
   Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart' as md;
 
 import 'package:vector_math/vector_math_64.dart';
 
-
 class Text2 extends CShape with Drawable {
   static final Text2 empty = Text2(text: null);
 
@@ -89,6 +88,7 @@ class Text2 extends CShape with Drawable {
     _painter = null;
     _boxPainter = decoration?.createBoxPainter(() {
       //TODO 应该重绘
+
     });
     _boxConfig = null;
     _boxRect = Rect.zero;

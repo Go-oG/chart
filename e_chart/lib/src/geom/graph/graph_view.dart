@@ -24,6 +24,6 @@ class GraphView extends AnimateGeomView<GraphSeries> {
   }
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+  void onLayoutNodeList(List<DataNode> nodeList) {
   }
 }

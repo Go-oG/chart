@@ -372,9 +372,7 @@ class GridCoordImpl extends GridCoord {
       });
     }
     if (hasChange) {
-      ///TODO 缩放更新
-      // context.dispatchEvent(AxisChangeEvent(this, [], null));
-      repaint();
+      requestLayout();
     }
   }
 
@@ -498,6 +496,20 @@ class GridCoordImpl extends GridCoord {
     var axis = axisMap[axisCfg[dim.index]]!;
     return axis.axisScale.convert(value);
   }
+
+  @override
+  RangeInfo getAxisViewportRange(AxisDim dim) {
+    GridAxis axis;
+    XAxisImpl impl;
+    if (dim.dim.isX) {
+      axis = option.xAxisList[dim.index];
+      impl = xMap[axis]!;
+    } else {
+      axis = option.yAxisList[dim.index];
+      impl = yMap[axis]!;
+    }
+    return impl.getViewportDataRange();
+  }
 }
 
 abstract class GridCoord extends CoordView<Grid> {
@@ -536,4 +548,6 @@ abstract class GridCoord extends CoordView<Grid> {
   }
 
   double convert2(AxisDim dim, dynamic value);
+
+  RangeInfo getAxisViewportRange(AxisDim dim);
 }

@@ -5,7 +5,7 @@ class BoxView extends AnimateGeomView<BoxGeom> {
   BoxView(super.context, super.geom);
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+  void onLayoutNodeList(List<DataNode> nodeList) {
     var dimX = geom.xPos.axisDim;
     var dimY = geom.yPos.axisDim;
     var coord = geom.findCoord(context);

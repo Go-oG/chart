@@ -21,7 +21,6 @@ export 'map/util.dart';
 export 'attrs.dart';
 export 'data.dart';
 export 'data_manager.dart';
-export 'data_store.dart';
 export 'node_props_mix.dart';
 export 'node_set.dart';
 export 'state.dart';

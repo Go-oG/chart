@@ -46,7 +46,7 @@ class PieView extends BasePointView<PieGeom> {
   }
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+  void onLayoutNodeList(List<DataNode> nodeList) {
     if (nodeList.isEmpty) {
       return;
     }
@@ -285,12 +285,6 @@ class PieView extends BasePointView<PieGeom> {
   @override
   LayoutResult layoutSingleNode(CoordView<Coord> coord, DataNode node) {
     // TODO: implement layoutSingleNode
-    throw UnimplementedError();
-  }
-
-  @override
-  Size layoutSingleNodeSize(CoordView<Coord> coord, DataNode node) {
-    // TODO: implement layoutSingleNodeSize
     throw UnimplementedError();
   }
 }

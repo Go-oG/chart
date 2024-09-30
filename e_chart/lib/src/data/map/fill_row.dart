@@ -5,11 +5,7 @@ import 'package:e_chart/e_chart.dart';
 class FillRowsTransform extends GroupTransform {
   bool fillByGroup;
 
-  FillRowsTransform(
-    List<String> groupBy,
-    List<String> orderBy, [
-    this.fillByGroup = true,
-  ]) : super(groupBy: groupBy, orderBy: orderBy);
+  FillRowsTransform(List<String> groupBy, List<String> orderBy, [this.fillByGroup = true,]) : super(groupBy: groupBy, orderBy: orderBy);
 
   @override
   List<RawData> transform(List<RawData> input) {

@@ -1,21 +1,16 @@
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
 
 abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
   BasePointView(super.context, super.geom);
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+  void onLayoutNodeList(List<DataNode> nodeList) {
     var coord = findCoordView();
     if (coord == null) {
       return;
     }
     for (var node in nodeList) {
-      var layoutResult=layoutSingleNode(coord, node);
-      var size=layoutSingleNodeSize(coord, node);
-      node.layoutResult = layoutResult;
-      node.size =size;
+      node.layoutResult = layoutSingleNode(coord, node);
     }
   }
 
@@ -28,11 +23,10 @@ abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
 
   LayoutResult layoutSingleNode(CoordView coord, DataNode node);
 
-  Size layoutSingleNodeSize(CoordView coord, DataNode node);
-
   @override
   void onClickAfter(DataNode? now, DataNode? old) {
     repaint();
+
     // List<DataNode> oldList = [];
     // if (old != null) {
     //   oldList.add(old);

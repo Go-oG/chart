@@ -46,9 +46,10 @@ final class RenderRoot extends RenderBox implements ViewParent {
   }
 
   void onUpdateRender(ChartOption option, TickerProvider provider) {
+    bool change = false;
     if (option != this.option) {
       this.option = option;
-      //TODO 更新
+      change = true;
     }
     Logger.i('onUpdateRender');
     this.provider = provider;
@@ -56,7 +57,7 @@ final class RenderRoot extends RenderBox implements ViewParent {
     attachInfo.root = this;
     markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
-    if (!hasSize) {
+    if (!hasSize || change) {
       markNeedsLayout();
     } else {
       markNeedsPaint();

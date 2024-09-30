@@ -340,6 +340,7 @@ final class NormalizeData {
   List<double> get(Dim dim) {
     return _normalizeMap[dim]!;
   }
+
   List<double>? getNull(Dim dim) {
     return _normalizeMap[dim];
   }

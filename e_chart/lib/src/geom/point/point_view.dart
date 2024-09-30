@@ -39,6 +39,14 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
   }
 
   @override
+  void onLayoutNodeEnd(List<DataNode> nodeList) {
+    var coordView = findCoordView()!;
+    for(var node in nodeList){
+      node.size=layoutSingleNodeSize(coordView, node);
+    }
+    super.onLayoutNodeEnd(nodeList);
+  }
+
   Size layoutSingleNodeSize(CoordView coord, DataNode node) {
     if (coord is CalendarCoord) {
       return coord.cellSize;

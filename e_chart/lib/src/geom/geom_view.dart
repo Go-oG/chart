@@ -21,6 +21,11 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   @protected
   final ViewNotifier viewNotifier = ViewNotifier();
 
+  ///存储复合shape，例如 line path等需要多个数据共同构建的Shape
+  ///其它单个数据对应的自身CShape 由节点自身存储
+  @protected
+  List<CombineShape> combineShapeList = [];
+
   ///存储当前所有节点的分布情况，使用RTree来加快节点搜索和访问
   @protected
   late final RBush<DataNode> rBush = RBush(
@@ -30,12 +35,7 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
     (p0) => getNodeBound(p0).bottom,
   );
 
-  ///存储复合shape，例如 line path等需要多个数据共同构建的Shape
-  ///其它单个数据对应的自身CShape 由节点自身存储
-  @protected
-  List<CombineShape> combineShapeList = [];
-
-  ///存储当前View下所有的数据节点
+  ///存储当前View下持有所有数据节点
   @protected
   final DataNodeSet nodeSet = DataNodeSet();
 
@@ -123,13 +123,6 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   bool get firstDrawCombineShape => true;
 
   @override
-  void onDragMove(Offset local, Offset global, Offset diff) {
-    super.onDragMove(local, global, diff);
-    updateShowNodeSet();
-    repaint();
-  }
-
-  @override
   void onClick(Offset local, Offset global) {
     local = local.translate(scrollX, scrollY);
     var node = findDataNode(local);
@@ -161,11 +154,6 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
     repaint();
   }
 
-  void updateShowNodeSet() {
-    showNodeSet.clear();
-    showNodeSet.addAll(rBush.search(getVisibleArea()));
-  }
-
   ///根据偏移量获取数据节点
   DataNode? findDataNode(Offset offset) {
     var result = rBush.search2(Rect.fromCircle(center: offset, radius: 4));
@@ -175,11 +163,6 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
       }
     }
     return null;
-  }
-
-  ///返回可见区域范围矩形
-  Rect getVisibleArea() {
-    return Rect.fromLTWH(-scrollX, -scrollY, width, height);
   }
 
   ///获取节点边界
@@ -223,8 +206,9 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
   bool inAnimation = false;
 
   ///获取动画相关配置
+  /// 如果返回为空则 不执行动画
   AnimateOption? getAnimateOption(LayoutType type, [int objCount = -1]) {
-    return null;
+    return geom.getAnimation(objCount);
   }
 
   ///添加一个动画
@@ -246,7 +230,6 @@ abstract class GeomView<T extends Geom> extends GestureView with ViewNodeEventMi
 
     return view;
   }
-
 }
 
 final class CombineShape {
@@ -282,6 +265,7 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     var pair = await _loadNewLayoutDataNodeSet();
     var newList = pair.first;
     var newLayoutList = pair.second;
+
     var transList = geom.layoutTransformList;
     if (transList.isNotEmpty) {
       for (var transform in transList) {
@@ -290,19 +274,22 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
       return;
     }
 
-    ///默认构造方式
+    ///默认布局方式
+    //保存前一帧节点
     saveOldNodeSet();
     List<DataNode> oldList = preNodeSet.nodeList;
+    //保存完整的布局节点
     setNodeSet(newList);
-    showNodeSet.setAll(newLayoutList);
+
     var an = DiffUtil.diff(
       getAnimateOption(LayoutType.layout, oldList.length + newLayoutList.length),
       oldList,
       newLayoutList,
       (nodeList) {
+        ///更新显示的节点
         showNodeSet.setAll(nodeList);
         onLayoutNodeStart(nodeList);
-        onLayoutPositionAndSize(nodeList);
+        onLayoutNodeList(nodeList);
         onLayoutNodeEnd(nodeList);
       },
       onBuildAnimateStarAttrs,
@@ -321,31 +308,22 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
 
   ///加载新的布局数据集
   FutureOr<Pair<List<DataNode>, List<DataNode>>> _loadNewLayoutDataNodeSet() async {
-    List<DataNode> nodeList = [];
-    var manager = context.dataManager;
-    for (var data in geom.dataSet) {
-      var node = manager.getNode(data.id);
-      if (node == null) {
-        Logger.w("获取转换节点失败，可能为内部状态失效");
-      } else {
-        nodeList.add(node);
-      }
-    }
-    List<DataNode> newLayoutNodes = await clipNewLayoutNodes(nodeList);
-    return Pair(nodeList, newLayoutNodes);
+    List<DataNode> list = List.from(context.dataManager.getNodesByGeom(geom.coordId, geom.geomType));
+    List<DataNode> clipPendingNodes = await onClipPendingLayoutNodes(list);
+    return Pair(list, clipPendingNodes);
   }
 
   ///裁剪新的布局的节点数据量
   ///该方法可以由子类复写，返回特定范围的节点数据，减少布局计算量
   ///默认返回全部
-  FutureOr<List<DataNode>> clipNewLayoutNodes(List<DataNode> newTotalDataSet) {
+  FutureOr<List<DataNode>> onClipPendingLayoutNodes(List<DataNode> newTotalDataSet) {
     return newTotalDataSet;
   }
 
   ///在布局节点之前回调
   void onLayoutNodeStart(List<DataNode> newList) {}
 
-  void onLayoutPositionAndSize(List<DataNode> nodeList);
+  void onLayoutNodeList(List<DataNode> nodeList);
 
   void onLayoutNodeEnd(List<DataNode> nodeList) {}
 
@@ -355,7 +333,7 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     var tmp = [...oldList, ...newList];
     rBush.clear();
     rBush.addAll(tmp);
-    updateShowNodeSet();
+    showNodeSet.setAll(tmp);
   }
 
   ///返回节点需要执行动画的开始值
@@ -386,9 +364,12 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     inAnimation = false;
     rBush.clear();
     rBush.addAll(newList);
-    updateShowNodeSet();
+    showNodeSet.setAll(newList);
   }
 }
 
 
-
+enum UpdateReason {
+  drag,
+  animate;
+}

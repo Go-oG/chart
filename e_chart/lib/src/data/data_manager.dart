@@ -12,9 +12,6 @@ final class DataManager extends Disposable {
   ///按照坐标域-geom进行数据分类
   Map<CoordId, Map<GeomType, List<DataNode>>> _nodeCatMap = {};
 
-  ///存放轴的极值信息(需要注意层叠的情况(例如柱状图单个层叠))
-  Map<CoordId, Map<AxisDim, DataExtreme>> _extremeMap = {};
-
   ///存放坐标轴的映射信息
   ///<coordId>
   Map<CoordId, Map<AxisDim, BaseScale>> _axisScaleMap = {};
@@ -127,7 +124,6 @@ final class DataManager extends Disposable {
     _coordMap = coordMap;
     _nodeMap = nodeMap;
     _nodeCatMap = divisionMap;
-    _extremeMap = extremeMap;
     _axisScaleMap = axisMap;
 
     ///Hook5
@@ -278,7 +274,6 @@ final class DataManager extends Disposable {
     _nodeMap = {};
     _coordMap = {};
     _nodeCatMap = {};
-    _extremeMap = {};
     _axisScaleMap = {};
     super.dispose();
   }

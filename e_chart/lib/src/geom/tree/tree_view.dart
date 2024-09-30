@@ -57,7 +57,6 @@ class TreeView extends AnimateGeomView<TreeGeom> {
     if (option == null) {
       data.clear();
       transform.transform(context, width, height, rootNode);
-      updateShowNodeSet();
       requestLayout();
       return;
     }
@@ -96,7 +95,6 @@ class TreeView extends AnimateGeomView<TreeGeom> {
       repaint();
     });
     tween.addEndListener(() {
-      updateShowNodeSet();
       repaint();
     });
     tween.start(context, true);
@@ -168,7 +166,7 @@ class TreeView extends AnimateGeomView<TreeGeom> {
   }
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {}
+  void onLayoutNodeList(List<DataNode> nodeList) {}
 
   HierarchyTransform get transform{
     List<LayoutTransform> list = geom.layoutTransformList;

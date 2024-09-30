@@ -35,7 +35,7 @@ class TreeMapView extends AnimateGeomView<TreeMapGeom> {
   }
 
   @override
-  void onLayoutPositionAndSize(List<DataNode> nodeList) {
+  void onLayoutNodeList(List<DataNode> nodeList) {
     throw UnsupportedError("");
   }
 }
