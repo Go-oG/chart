@@ -253,7 +253,7 @@ class AngleAxisView extends AxisView<AngleAxis, AngleAxisAttrs, PolarCoord> {
     bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
     List<Offset> ol;
     if (snap) {
-      double interval = axisScale.bandSize.toDouble();
+      double interval = axisScale.getBandSize(0);
       int c = dis ~/ interval;
       if (axis.isCategoryAxis) {
         c -= 1;

@@ -43,7 +43,7 @@ class RadiusAxisView extends LineAxisView<RadiusAxis, RadiusAxisAttrs, PolarCoor
     bool snap = axisPointer.snap ?? (axis.isCategoryAxis || axis.isTimeAxis);
     Arc arc;
     if (snap) {
-      var interval = axisScale.bandSize;
+      var interval = axisScale.getBandSize(0);
       var diff = dis - ir;
       int c = diff ~/ interval;
       if (axis.isCategoryAxis) {
@@ -57,7 +57,6 @@ class RadiusAxisView extends LineAxisView<RadiusAxis, RadiusAxisAttrs, PolarCoor
           c = next;
         }
       }
-
       if (axis.isCategoryAxis && axis.categoryCenter) {
         dis = (c + 0.5) * interval;
       } else {

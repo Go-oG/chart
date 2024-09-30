@@ -136,4 +136,9 @@ class TimeScale extends BaseScale<DateTime> {
 
   @override
   bool get hasZero => false;
+
+  @override
+  int getBandIndex(DateTime domainValue) {
+    return _computeTickCount(domain.first, domainValue, splitType);
+  }
 }

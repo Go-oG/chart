@@ -45,7 +45,7 @@ mixin GeomMix {
   }
 
   dynamic mapData2(RawData data, Dim dim) {
-    var pos = _posList.findOrNull((p0) => p0.dim == dim);
+    var pos = _posList.find((p0) => p0.dim == dim);
     if (pos == null) {
       return null;
     }

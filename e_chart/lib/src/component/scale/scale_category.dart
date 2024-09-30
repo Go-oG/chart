@@ -1,20 +1,30 @@
-import '../../model/error.dart';
-import 'scale_base.dart';
+import 'package:e_chart/e_chart.dart';
+import 'package:flutter/foundation.dart';
 
 class CategoryScale extends BaseScale<String> {
   bool categoryCenter;
+  List<double> flex;
 
-  CategoryScale(super.domain, super.range, this.categoryCenter) {
+  @protected
+  List<List<double>> bandList = [];
+
+  CategoryScale(
+    super.domain,
+    super.range,
+    this.categoryCenter, {
+    this.flex = const [],
+  }) {
     if (domain.isEmpty) {
       throw ChartError('Domain至少应该有一个');
     }
+    _updateBand();
   }
 
   @override
   String invert(double rangeValue) {
-    double diff = range.last - range.first;
+    double diff = this.range.last - this.range.first;
     double interval = diff / domain.length;
-    int diff2 = (rangeValue - range.first) ~/ interval;
+    int diff2 = (rangeValue - this.range.first) ~/ interval;
     if (diff2 < 0) {
       diff2 = 0;
     }
@@ -36,7 +46,7 @@ class CategoryScale extends BaseScale<String> {
     if (index == -1) {
       return double.nan;
     }
-    num diff = range.last - range.first;
+    num diff = this.range.last - this.range.first;
     int c = domain.length;
     if (!categoryCenter) {
       c -= 1;
@@ -45,13 +55,13 @@ class CategoryScale extends BaseScale<String> {
       c = 1;
     }
     num interval = diff / c;
-    return range.first + index * interval;
+    return this.range.first + index * interval;
   }
 
   @override
   double convertRatio(double domainRatio) {
-    double diff = range.last - range.first;
-    return range.first + domainRatio * diff;
+    double diff = this.range.last - this.range.first;
+    return this.range.first + domainRatio * diff;
   }
 
   @override
@@ -64,13 +74,11 @@ class CategoryScale extends BaseScale<String> {
   }
 
   @override
-  double get bandSize {
-    var dis = (range[1] - range[0]).abs();
-    int c = domain.length;
-    if (!categoryCenter) {
-      c -= 1;
+  double getBandSize(int index) {
+    if (index < 0 || index >= bandList.length) {
+      throw ArgumentError();
     }
-    return dis / c;
+    return bandList[index][1] - bandList[index][0];
   }
 
   @override
@@ -104,4 +112,55 @@ class CategoryScale extends BaseScale<String> {
 
   @override
   bool get hasZero => false;
+
+  @override
+  void setDomain(List<String> newDomain) {
+    super.setDomain(newDomain);
+    _updateBand();
+  }
+
+  @override
+  void setRange(List<double> newRange) {
+    super.setRange(newRange);
+    _updateBand();
+  }
+
+  void setFlex(List<double> flex) {
+    this.flex = flex;
+    _updateBand();
+  }
+
+  void _updateBand() {
+    List<double> list = [...flex];
+    if (list.isEmpty) {
+      each(domain, (v, i) {
+        list.add(1);
+      });
+    } else {
+      if (list.length > domain.length) {
+        list.removeRange(domain.length, list.length);
+      } else {
+        int remainCount = domain.length - list.length;
+        for (int i = 0; i < remainCount; i++) {
+          list.add(1);
+        }
+      }
+    }
+    List<List<double>> cellList = [];
+    var sumValue = sum(list);
+    double offset = 0;
+    var star = this.range.first;
+    var all = this.range.last - this.range.first;
+    for (var item in list) {
+      var p = item / sumValue;
+      cellList.add([star + offset * all, star + (offset + p) * all]);
+      offset += p;
+    }
+    bandList = cellList;
+  }
+
+  @override
+  int getBandIndex(String domainValue) {
+    return domain.findIndex(domainValue);
+  }
 }

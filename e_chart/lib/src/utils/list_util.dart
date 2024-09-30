@@ -124,7 +124,7 @@ extension IterableExt<T> on Iterable<T> {
     return rl;
   }
 
-  T? findOrNull(bool Function(T) call) {
+  T? find(bool Function(T) call) {
     for (var v in this) {
       if (call.call(v)) {
         return v;
@@ -132,6 +132,37 @@ extension IterableExt<T> on Iterable<T> {
     }
     return null;
   }
+
+  T? findLast(bool Function(T) call) {
+    for (var v in toList().reversed) {
+      if (call.call(v)) {
+        return v;
+      }
+    }
+    return null;
+  }
+
+  int findIndex(T? data) {
+    int i = 0;
+    for (var v in this) {
+      if (v == data) {
+        return i;
+      }
+    }
+    return -1;
+  }
+  int findIndexBy(T? data, bool Function(T?,T?) call) {
+    int i = 0;
+    for (var v in this) {
+      if (call.call(data,v)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+
+
 }
 
 extension ListExt<T> on List<T> {
@@ -190,6 +221,15 @@ extension ListExt<T> on List<T> {
     }
 
     removeWhere((t) => dataSet.contains(t));
+  }
+
+  int findLastIndex(T? data) {
+    for (var i = length - 1; i >= 0; i--) {
+      if (this[i] == data) {
+        return i;
+      }
+    }
+    return -1;
   }
 }
 

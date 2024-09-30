@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:flutter/material.dart';
 
 class YAxisImpl extends XAxisImpl {
   YAxisImpl(super.direction, super.coord, super.context, super.axis, {super.axisIndex});
@@ -32,26 +31,5 @@ class YAxisImpl extends XAxisImpl {
       }
     }
     setMeasuredDimension(width, heightSpec.size);
-  }
-
-  @override
-  List<int> computeRangeIndex(num distance, int tickCount, num interval) {
-    Rect rect = coord.contentBox;
-    int startIndex, endIndex;
-    if (distance <= rect.height) {
-      startIndex = 0;
-      endIndex = tickCount;
-    } else {
-      double scroll = attrs.scrollX.abs();
-      startIndex = scroll ~/ interval - 2;
-      if (startIndex < 0) {
-        startIndex = 0;
-      }
-      endIndex = (scroll + rect.height) ~/ interval + 2;
-      if (endIndex > tickCount) {
-        endIndex = tickCount;
-      }
-    }
-    return [startIndex, endIndex];
   }
 }

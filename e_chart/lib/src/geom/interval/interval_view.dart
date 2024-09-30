@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
-
 import 'package:e_chart/e_chart.dart';
+
 class IntervalView extends AnimateGeomView<IntervalGeom> {
   late DataStore<DataNode> _xStore;
   late DataStore<DataNode> _yStore;

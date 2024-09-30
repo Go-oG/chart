@@ -2,10 +2,10 @@ import 'package:e_chart/e_chart.dart';
 
 ///将给定的domain映射到range
 abstract class BaseScale<D> extends Disposable {
-  ///表示域的范围(定义域)
+  ///定义域范围
   late List<D> domain;
 
-  ///映射域的值(值域)
+  ///值域范围
   late List<double> range;
 
   BaseScale(List<D> domain, List<double> range) {
@@ -36,7 +36,7 @@ abstract class BaseScale<D> extends Disposable {
 
   ///Tick之间的距离间距
   ///该间距是一个大间距,非每个小tick 之间的间距
-  double get bandSize {
+  double getBandSize(int index) {
     double v = (range[1] - range[0]).abs();
     int c = tickCount - 1;
     if (c < 1) {
@@ -45,12 +45,10 @@ abstract class BaseScale<D> extends Disposable {
     return v / c;
   }
 
-  ///每个MainTick 之间的距离占整个轴长度的比例
-  double get bandRatio {
-    if (isCategory) {
-      return 1 / domain.length;
-    }
-    return 1 / tickCount;
+  int getBandIndex(D domainValue);
+
+  List<int> getBandIndexRange(D firstValue, D endValue) {
+    return [getBandIndex(firstValue), getBandIndex(endValue)];
   }
 
   bool get isCategory => false;
@@ -73,11 +71,11 @@ abstract class BaseScale<D> extends Disposable {
 
   BaseScale<D> copyWithRange(List<double> range);
 
-  void changeDomain(List<D> newDomain) {
+  void setDomain(List<D> newDomain) {
     this.domain = newDomain;
   }
 
-  void changeRange(List<double> newRange) {
+  void setRange(List<double> newRange) {
     this.range = newRange;
   }
 
@@ -86,10 +84,5 @@ abstract class BaseScale<D> extends Disposable {
     super.dispose();
     domain.clear();
     range.clear();
-  }
-
-  @override
-  String toString() {
-    return "domain:$domain range:$range";
   }
 }

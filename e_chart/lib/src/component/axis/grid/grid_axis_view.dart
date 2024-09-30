@@ -8,11 +8,11 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
   BaseGridAxisImpl(this.direction, super.context, super.axis, super.coord, {super.axisIndex});
 
   @override
-  Future<void>  onLayout(bool changed, double left, double top, double right, double bottom)async {
+  Future<void> onLayout(bool changed, double left, double top, double right, double bottom) async {
     if (direction.isHorizontal()) {
-      axisScale.changeRange([0, right - left]);
+      axisScale.setRange([0, right - left]);
     } else {
-      axisScale.changeRange([0, bottom - top]);
+      axisScale.setRange([0, bottom - top]);
     }
     super.onLayout(changed, left, top, right, bottom);
   }
@@ -27,11 +27,11 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
     var angle = axisAngle;
     var style = axisLine.getStyle(axisTheme);
 
-    final double interval = scale.bandSize.toDouble();
-    List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+    List<int> indexList = computeRangeIndex();
     List<AxisLineDrawable> resultList = [];
 
     for (int i = indexList[0]; i < indexList[1] - 1; i++) {
+      var interval = scale.getBandSize(i);
       var dis = interval * i;
       var nextDis = dis + interval;
       var s = center.translate(dis, 0);
@@ -59,21 +59,20 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
       tickCount = 1;
     }
 
-    final double interval = scale.bandSize;
-    List<int> indexList = computeRangeIndex(axisLength, tickCount, interval);
+    List<int> indexList = computeRangeIndex();
 
     var minorTick = axis.axisTick.minorTick;
     final minorCount = minorTick?.splitNumber ?? 0;
     final int tickDir = axisTick.inside ? -1 : 1;
     final double tickOffset = axisTick.getTickSize() * tickDir;
     final double minorOffset = axisTick.getMinorSize() * tickDir;
-    final minorInterval = interval / (minorCount + 1);
 
     final center = attrs.start;
     final angle = axisAngle;
     List<TickDrawable> resultList = [];
     var tickStyle = tick.lineStyle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
+      final double interval = scale.getBandSize(i);
       double dis = i * interval;
       final Offset offset = center.translate(dis, 0);
       Offset start = offset.rotate(angle, center: center);
@@ -84,6 +83,7 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
         continue;
       }
 
+      final minorInterval = interval / (minorCount + 1);
       for (int j = 1; j < minorCount; j++) {
         var dis2 = minorInterval * j + dis;
         Offset ms = offset.translate(minorInterval * j, 0);
@@ -103,10 +103,8 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
       return null;
     }
 
-    final double interval = scale.bandSize;
-
     ///计算索引
-    final indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+    final indexList = computeRangeIndex();
     final labels = obtainLabel2(indexList[0], indexList[1]);
 
     double labelOffset = axisLabel.padding + axisLabel.margin + 0;
@@ -134,6 +132,7 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
     final center = attrs.start;
     final angle = axisAngle;
     for (int i = indexList[0]; i < indexList[1]; i++) {
+      final double interval = scale.getBandSize(i);
       num d = i;
       if (scale.isCategory && axis.categoryCenter) {
         d += 0.5;
@@ -169,11 +168,12 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
       return null;
     }
     List<SplitAreaDrawable> list = [];
-    final double interval = scale.bandSize;
-    List<int> indexList = computeRangeIndex(axisLength, scale.tickCount, interval);
+
+    List<int> indexList = computeRangeIndex();
 
     List<List<Offset>> pl = [];
     for (int i = indexList[0]; i < indexList[1]; i++) {
+      final double interval = scale.getBandSize(i);
       double dis = i * interval;
       Offset start;
       Offset end;
@@ -212,9 +212,10 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
     if (tickCount <= 0) {
       tickCount = 1;
     }
-    final double interval = scale.bandSize;
-    List<int> indexList = computeRangeIndex(axisLength, tickCount, interval);
+
+    List<int> indexList = computeRangeIndex();
     for (int i = indexList[0]; i < indexList[1]; i++) {
+      final double interval = scale.getBandSize(i);
       double dis = i * interval;
       Offset start;
       Offset end;
@@ -413,7 +414,8 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
     if (!snap) {
       return dis;
     }
-    final interval = axisScale.bandSize.toDouble();
+    //TODO 错误计算
+    final interval = axisScale.getBandSize(0);
     int c = dis ~/ interval;
     if (!axis.isCategoryAxis) {
       int next = c + 1;
@@ -459,43 +461,18 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
     return Rect.fromLTRB(-attrs.rect.width, top, box.left + attrs.rect.width, top + h);
   }
 
-  List<int> computeRangeIndex(num distance, int tickCount, num interval) {
+  List<int> computeRangeIndex() {
     Rect rect = coord.contentBox;
-    int startIndex, endIndex;
     if (isXAxis) {
-      if (distance <= rect.width) {
-        startIndex = 0;
-        endIndex = tickCount;
-      } else {
-        double scroll = attrs.scrollX.abs();
-        startIndex = scroll ~/ interval - 2;
-        if (startIndex < 0) {
-          startIndex = 0;
-        }
-        endIndex = (scroll + rect.width) ~/ interval + 2;
-        if (endIndex > tickCount) {
-          endIndex = tickCount;
-        }
-      }
-      return [startIndex, endIndex];
+      double scroll = -attrs.scrollX;
+      var s = scroll;
+      var e = scroll + rect.width;
+      return axisScale.getBandIndexRange(s, e);
     }
-
-    //Y轴
-    if (distance <= rect.height) {
-      startIndex = 0;
-      endIndex = tickCount;
-    } else {
-      double scroll = attrs.scrollY.abs();
-      startIndex = scroll ~/ interval - 2;
-      if (startIndex < 0) {
-        startIndex = 0;
-      }
-      endIndex = (scroll + rect.height) ~/ interval + 2;
-      if (endIndex > tickCount) {
-        endIndex = tickCount;
-      }
-    }
-    return [startIndex, endIndex];
+    double scroll = -attrs.scrollY;
+    var s = scroll;
+    var e = scroll + rect.height;
+    return axisScale.getBandIndexRange(s, e);
   }
 
   ///获取坐标轴当前显示范围的数据值
@@ -505,9 +482,8 @@ abstract class BaseGridAxisImpl extends LineAxisView<GridAxis, GridAxisAttr, Gri
       tickCount = 1;
     }
     final distance = attrs.distance;
-    final double interval = distance / (tickCount - 1);
     if (axisScale.isCategory || axisScale.isTime) {
-      List<int> indexList = computeRangeIndex(distance, tickCount, interval);
+      List<int> indexList = computeRangeIndex();
       List<dynamic> dl = axisScale.getRangeLabel(indexList[0], indexList[1]);
       if (axisScale.isCategory) {
         return RangeInfo.category(dl as List<String>);

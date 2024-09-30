@@ -13,9 +13,10 @@ class RadarAxisView extends LineAxisView<RadarAxis, LineAxisAttrs, RadarCoord> {
     }
     List<Drawable> list = [];
     int tickCount = scale.tickCount;
-    double interval = scale.bandSize;
+
     var angle = axisAngle;
     for (int i = 0; i < tickCount - 1; i++) {
+      double interval = scale.getBandSize(i);
       var style = splitArea.getStyle(i, tickCount - 1, axisTheme);
       var arc = Arc(
           center: attrs.start,
@@ -37,9 +38,9 @@ class RadarAxisView extends LineAxisView<RadarAxis, LineAxisAttrs, RadarCoord> {
     }
     List<Drawable> list = [];
     int tickCount = scale.tickCount;
-    double interval = scale.bandSize;
     var angle = axisAngle;
     for (int i = 1; i < tickCount - 1; i++) {
+      double interval = scale.getBandSize(i);
       var style = splitLine.getStyle([], i, tickCount - 1, axisTheme);
       list.add(AxisCurveDrawable.of([], i, tickCount - 1, attrs.start, interval * i, angle, 360, style));
     }

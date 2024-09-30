@@ -96,4 +96,11 @@ class LinearScale extends BaseScale<num> {
   bool get hasZero {
     return (domain[0] <= 0 && domain[1] >= 0) || (domain[0] >= 0 && domain[1] <= 0);
   }
+
+  @override
+  int getBandIndex(num domainValue) {
+    return domainValue ~/ step;
+  }
+
+
 }

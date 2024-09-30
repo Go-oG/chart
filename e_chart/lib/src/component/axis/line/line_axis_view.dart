@@ -26,11 +26,12 @@ abstract class LineAxisView<T extends BaseAxis, P extends LineAxisAttrs, C exten
     if (tickCount <= 0) {
       tickCount = 1;
     }
-    final double interval = scale.bandSize.toDouble();
+
     List<AxisLineDrawable> resultList = [];
     var angle = axisAngle;
     final int maxCount = tickCount - 1;
     for (int i = 0; i < maxCount; i++) {
+      final double interval = scale.getBandSize(i);
       var dis = interval * i;
       var nextDis = dis + interval;
       var offset = attrs.start.translate(dis, 0);
@@ -58,18 +59,18 @@ abstract class LineAxisView<T extends BaseAxis, P extends LineAxisAttrs, C exten
       tickCount = 1;
     }
 
-    final double interval = scale.bandSize;
+
     final int insideDir = axisTick.inside ? -1 : 1;
     final double tickOffset = axisTick.getTickSize() * insideDir;
     final double minorOffset = axisTick.getMinorSize() * insideDir;
     final minorCount = minorTick?.splitNumber ?? 0;
-    final double minorInterval = minorCount <= 0 ? 0 : (interval / (minorCount + 1));
 
     List<TickDrawable> resultList = [];
     final center = attrs.start;
     final angle = axisAngle;
 
     for (int i = 0; i < tickCount; i++) {
+      final double interval = scale.getBandSize(i);
       var dis = interval * i;
       final offset = center.translate(dis, 0);
       var start = offset.rotate(angle, center: center);
@@ -81,6 +82,7 @@ abstract class LineAxisView<T extends BaseAxis, P extends LineAxisAttrs, C exten
         continue;
       }
       for (int j = 1; j < minorCount; j++) {
+        final double minorInterval = minorCount <= 0 ? 0 : (interval / (minorCount + 1));
         var dis2 = minorInterval * j;
         var ms = offset.translate(dis2, 0);
         var me = ms.translate(0, minorOffset);
