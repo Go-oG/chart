@@ -28,7 +28,7 @@ abstract class BaseTreeGeom extends Geom {
     }
     tree = toTree(context, this, dataSet, parentFun, childFun);
     if (tree != null) {
-      computeTree(tree, useParent: useParentValue);
+      tree.compute(sumUseParent: useParentValue);
     }
     _tree = tree;
     return _tree;

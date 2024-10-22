@@ -155,6 +155,15 @@ mixin NodePropsMix {
     y = ce.dy;
   }
 
+  Rect get position => Rect.fromCenter(center: center, width: width, height: height);
+
+  set position(Rect rect) {
+    Offset center = rect.center;
+    x = center.dx;
+    y = center.dy;
+    size = rect.size;
+  }
+
   void fillFromAttr(Attrs attr) {
     for (var entry in attr.attrs.entries) {
       var key = entry.key;

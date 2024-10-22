@@ -3,14 +3,13 @@ import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
 
-typedef TreeFun = bool Function(TreeNode node, int index, TreeNode startNode);
+///当返回true 表示要终止遍历
+typedef TreeEachFun = bool Function(TreeNode node, int index, TreeNode startNode);
 
 class TreeNode extends DataNode with ExtProps {
   TreeNode? parent;
   List<TreeNode> _childrenList = [];
 
-  ///后代节点数
-  int _count = 0;
   bool _expand = true; //是否展开
   double get areaRatio {
     if (parent == null) {
@@ -32,36 +31,6 @@ class TreeNode extends DataNode with ExtProps {
     _childrenList.addAll(children);
   }
 
-  void removeChild(bool Function(TreeNode) filter) {
-    _childrenList.removeWhere(filter);
-  }
-
-  TreeNode removeAt(int i) {
-    return _childrenList.removeAt(i);
-  }
-
-  TreeNode removeFirst() {
-    return removeAt(0);
-  }
-
-  TreeNode removeLast() {
-    return removeAt(_childrenList.length - 1);
-  }
-
-  void removeWhere(bool Function(TreeNode) where, [bool iterator = false]) {
-    if (!iterator) {
-      _childrenList.removeWhere(where);
-      return;
-    }
-
-    List<TreeNode> nodeList = [this];
-    while (nodeList.isNotEmpty) {
-      TreeNode first = nodeList.removeAt(0);
-      first._childrenList.removeWhere(where);
-      nodeList.addAll(first._childrenList);
-    }
-  }
-
   List<TreeNode> get children {
     return _childrenList;
   }
@@ -79,16 +48,23 @@ class TreeNode extends DataNode with ExtProps {
   int get childCount => _childrenList.length;
 
   /// 自身在父节点中的索引 如果为-1表示没有父节点
-  int get childIndex {
+  int get parentIndex {
     if (parent == null) {
       return -1;
     }
     return parent!._childrenList.indexOf(this);
   }
 
-  ///返回后代节点数
-  ///调用该方法前必须先调用 computeCount，否则永远返回0
-  int get count => _count;
+  ///计算后代节点数
+  ///后代节点数(包括子孙节点数)
+  int _descendantCount = -1;
+
+  int get descendantCount {
+    if (_descendantCount < 0) {
+      computeDescendantCount();
+    }
+    return _descendantCount;
+  }
 
   TreeNode get root {
     TreeNode? tmpRoot = this;
@@ -123,6 +99,7 @@ class TreeNode extends DataNode with ExtProps {
       return;
     }
     _childrenList.add(node);
+    _descendantCount = -1;
   }
 
   void addAll(Iterable<TreeNode> nodes) {
@@ -131,8 +108,60 @@ class TreeNode extends DataNode with ExtProps {
     }
   }
 
-  void remove(TreeNode node) {
-    _childrenList.remove(node);
+  void remove(TreeNode node, [bool resetParent = true]) {
+    if (_childrenList.remove(node)) {
+      _descendantCount = -1;
+      if (resetParent) {
+        node.parent = null;
+      }
+    }
+  }
+
+  TreeNode removeFirst([bool resetParent = true]) {
+    return removeAt(0, resetParent: resetParent);
+  }
+
+  TreeNode removeLast([bool resetParent = true]) {
+    return removeAt(_childrenList.length - 1, resetParent: resetParent);
+  }
+
+  TreeNode removeAt(
+    int i, {
+    bool resetParent = true,
+  }) {
+    var node = _childrenList.removeAt(i);
+    if (resetParent) {
+      node.parent = null;
+    }
+    _descendantCount = -1;
+    return node;
+  }
+
+  void removeChild(bool Function(TreeNode) where, [bool resetParent = true]) {
+    Set<TreeNode> removeSet = <TreeNode>{};
+    _childrenList.removeWhere((e) {
+      if (where.call(e)) {
+        removeSet.add(e);
+        return true;
+      }
+      return false;
+    });
+    if (resetParent) {
+      for (var item in removeSet) {
+        item.parent = null;
+      }
+    }
+  }
+
+  void removeWhere(bool Function(TreeNode) where, {bool iterator = false, bool resetParent = true}) {
+    List<TreeNode> nodeList = [this];
+    while (nodeList.isNotEmpty) {
+      TreeNode first = nodeList.removeAt(0);
+      first.removeChild(where, resetParent);
+      if (iterator) {
+        nodeList.addAll(first.children);
+      }
+    }
   }
 
   void clear() {
@@ -196,26 +225,44 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   ///层序遍历
-  List<List<TreeNode>> levelEach([int level = -1]) {
+  List<List<TreeNode>> levelEach([int maxLevel = -1]) {
     List<List<TreeNode>> resultList = [];
     List<TreeNode> list = [this];
     List<TreeNode> next = [];
-    if (level <= 0) {
-      level = 2 ^ 16;
+    if (maxLevel <= 0) {
+      maxLevel = 2 ^ 16;
     }
-    while (list.isNotEmpty && level > 0) {
+    while (list.isNotEmpty && maxLevel > 0) {
       resultList.add(list);
       for (var c in list) {
         next.addAll(c.children);
       }
       list = next;
       next = [];
-      level--;
+      maxLevel--;
     }
     return resultList;
   }
 
-  TreeNode each(TreeFun callback, [bool exitUseBreak = true]) {
+  void bfsEach(void Function(TreeNode, int) f, [int maxLevel = -1]) {
+    if (maxLevel <= 0) {
+      maxLevel = 2 ^ 53;
+    }
+    List<Pair<TreeNode, int>> queue = [Pair(this, 0)];
+    while (queue.isNotEmpty) {
+      var tmp = queue.removeAt(0);
+      var node = tmp.first;
+      int depth = tmp.second;
+      f.call(node, depth);
+      if (depth < maxLevel) {
+        for (var child in node.children) {
+          queue.add(Pair(child, depth + 1));
+        }
+      }
+    }
+  }
+
+  TreeNode each(TreeEachFun callback) {
     int index = -1;
     for (var node in iterator()) {
       if (callback.call(node, ++index, this)) {
@@ -226,17 +273,14 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   ///先序遍历
-  TreeNode eachBefore(TreeFun callback, [bool exitUseBreak = true]) {
+  TreeNode eachBefore(TreeEachFun callback) {
     List<TreeNode> nodes = [this];
     List<TreeNode> children;
     int index = -1;
     while (nodes.isNotEmpty) {
       TreeNode node = nodes.removeLast();
       if (callback.call(node, ++index, this)) {
-        if (exitUseBreak) {
-          break;
-        }
-        continue;
+        break;
       }
       children = node._childrenList;
       nodes.addAll(children.reversed);
@@ -245,7 +289,7 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   ///后序遍历
-  TreeNode eachAfter(TreeFun callback, [bool exitUseBreak = true]) {
+  TreeNode eachAfter(TreeEachFun callback) {
     List<TreeNode> nodes = [this];
     List<TreeNode> next = [];
     List<TreeNode> children;
@@ -266,26 +310,48 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   ///在子节点中查找对应节点
-  TreeNode? findInChildren(TreeFun callback) {
-    int index = -1;
-    for (TreeNode node in _childrenList) {
-      if (callback.call(node, ++index, this)) {
-        return node;
-      }
-    }
-    return null;
+  TreeNode? findInChildren(TreeEachFun where) {
+    return findWhere(where, iterator: false, limit: 1).firstOrNull;
   }
 
-  TreeNode? find(TreeFun callback) {
-    TreeNode? result;
+  TreeNode? find(TreeEachFun where) {
+    return findWhere(where, iterator: true).firstOrNull;
+  }
+
+  List<TreeNode> findWhere(
+    TreeEachFun where, {
+    bool iterator = true,
+    int limit = -1,
+  }) {
+    if (limit <= 0) {
+      limit = 2 << 53;
+    }
+
+    List<TreeNode> list = [];
+    if (!iterator) {
+      int index = 0;
+      for (var item in _childrenList) {
+        if (where.call(item, index, this)) {
+          list.add(item);
+        }
+        if (list.length >= limit) {
+          break;
+        }
+        index++;
+      }
+      return list;
+    }
+
     each((node, index, startNode) {
-      if (callback.call(node, index, this)) {
-        result = node;
+      if (where.call(node, index, this)) {
+        list.add(node);
+      }
+      if (list.length >= limit) {
         return true;
       }
       return false;
     });
-    return result;
+    return list;
   }
 
   /// 从当前节点开始查找深度等于给定深度的节点
@@ -329,7 +395,7 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   ///返回从当前节点到指定节点的最短路径
-  List<TreeNode> targetPath(TreeNode target) {
+  List<TreeNode> findPath(TreeNode target) {
     TreeNode? start = this;
     TreeNode? end = target;
     TreeNode? ancestor = minCommonAncestor(start, end);
@@ -348,17 +414,109 @@ class TreeNode extends DataNode with ExtProps {
     return nodes;
   }
 
-  TreeNode sort(int Function(TreeNode, TreeNode) compare, [bool iterator = true]) {
+  TreeNode sort(Fun3<TreeNode, TreeNode, int> sortFun, [bool iterator = true]) {
     if (iterator) {
-      return eachBefore((TreeNode node, b, c) {
+      eachBefore((TreeNode node, b, c) {
         if (node.childCount > 1) {
-          node._childrenList.sort(compare);
+          node._childrenList.sort(sortFun);
         }
         return false;
       });
+      return this;
     }
-    _childrenList.sort(compare);
+    _childrenList.sort(sortFun);
     return this;
+  }
+
+  ///统计并计算一些信息
+  ///计算节点value、深度、高度
+  void compute({
+    Fun3<TreeNode, TreeNode, int>? sortFun,
+    bool sortIterator = true,
+    bool computeDepth = true,
+    int currentDepth = 0,
+    int initHeight = 0,
+    bool computeSum = true,
+    bool sumUseParent = true,
+    bool throwError = true,
+  }) {
+    if (sortFun != null) {
+      sort(sortFun, sortIterator);
+    }
+    if (computeDepth) {
+      setDeep(currentDepth, true);
+      computeHeight(initHeight);
+      setMaxDeep(treeHeight);
+    }
+    if (computeSum) {
+      this.computeSum(throwError: throwError, useParent: sumUseParent);
+    }
+  }
+
+  ///计算当前节点的后代数
+  int computeDescendantCount() {
+    eachAfter((TreeNode node, b, c) {
+      int sum = 0;
+      List<TreeNode> children = node._childrenList;
+      int i = children.length;
+      if (i == 0) {
+        sum = 1;
+      } else {
+        while (--i >= 0) {
+          sum += children[i]._descendantCount;
+        }
+      }
+      node._descendantCount = sum;
+      return false;
+    });
+    return _descendantCount;
+  }
+
+  /// 计算树的高度
+  void computeHeight([int initHeight = 0]) {
+    List<List<TreeNode>> levelList = [];
+    List<TreeNode> tmp = [this];
+    List<TreeNode> next = [];
+    while (tmp.isNotEmpty) {
+      levelList.add(tmp);
+      next = [];
+      for (var c in tmp) {
+        next.addAll(c.children);
+      }
+      tmp = next;
+    }
+    int c = levelList.length;
+    for (int i = 0; i < c; i++) {
+      for (var node in levelList[i]) {
+        node.treeHeight = c - i - 1;
+      }
+    }
+  }
+
+  void computeSum({bool throwError = true, bool useParent = true}) {
+    levelEach().eachRight((list, p1) {
+      for (var node in list) {
+        if (node.hasChild) {
+          double sum = 0;
+          for (var child in node.children) {
+            sum += child.value;
+          }
+          var value = node.value;
+          if (value.isNaN || value.isInfinite || value <= sum) {
+            node.value = sum;
+          } else {
+            node.value = useParent ? node.value : sum;
+          }
+        } else {
+          if (node.value.isInfinite || node.value.isNaN) {
+            if (throwError) {
+              throw ChartError("违法数据 ${node.data}");
+            }
+            node.value = 0;
+          }
+        }
+      }
+    });
   }
 
   ///计算当前节点值
@@ -383,65 +541,6 @@ class TreeNode extends DataNode with ExtProps {
     });
   }
 
-  ///返回当前节点下最左边的叶子节点
-  TreeNode leafLeft() {
-    List<TreeNode> children = [];
-    TreeNode node = this;
-    while ((children = node.children).isNotEmpty) {
-      node = children[0];
-    }
-    return node;
-  }
-
-  TreeNode leafRight() {
-    List<TreeNode> children = [];
-    TreeNode node = this;
-    while ((children = node.children).isNotEmpty) {
-      node = children[children.length - 1];
-    }
-    return node;
-  }
-
-  /// 计算当前节点的后代节点数
-  int computeCount() {
-    eachAfter((TreeNode node, b, c) {
-      int sum = 0;
-      List<TreeNode> children = node._childrenList;
-      int i = children.length;
-      if (i == 0) {
-        sum = 1;
-      } else {
-        while (--i >= 0) {
-          sum += children[i]._count;
-        }
-      }
-      node._count = sum;
-      return false;
-    });
-    return _count;
-  }
-
-  /// 计算树的高度
-  void computeHeight([int initHeight = 0]) {
-    List<List<TreeNode>> levelList = [];
-    List<TreeNode> tmp = [this];
-    List<TreeNode> next = [];
-    while (tmp.isNotEmpty) {
-      levelList.add(tmp);
-      next = [];
-      for (var c in tmp) {
-        next.addAll(c.children);
-      }
-      tmp = next;
-    }
-    int c = levelList.length;
-    for (int i = 0; i < c; i++) {
-      for (var node in levelList[i]) {
-        node.treeHeight = c - i - 1;
-      }
-    }
-  }
-
   ///设置深度
   void setDeep(int deep, [bool iterator = true]) {
     this.deep = deep;
@@ -461,7 +560,6 @@ class TreeNode extends DataNode with ExtProps {
     }
   }
 
-  //设置树高度
   void setTreeHeight(int height, [bool iterator = true]) {
     treeHeight = height;
     if (iterator) {
@@ -469,6 +567,25 @@ class TreeNode extends DataNode with ExtProps {
         node.setTreeHeight(height - 1, true);
       }
     }
+  }
+
+  ///返回当前节点下最左边的叶子节点
+  TreeNode leafLeft() {
+    List<TreeNode> children = [];
+    TreeNode node = this;
+    while ((children = node.children).isNotEmpty) {
+      node = children[0];
+    }
+    return node;
+  }
+
+  TreeNode leafRight() {
+    List<TreeNode> children = [];
+    TreeNode node = this;
+    while ((children = node.children).isNotEmpty) {
+      node = children[children.length - 1];
+    }
+    return node;
   }
 
   int findMaxDeep() {
@@ -480,7 +597,6 @@ class TreeNode extends DataNode with ExtProps {
   }
 
   //=======坐标相关的操作========
-
   ///找到一个节点是否在[offset]范围内
   TreeNode? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
     double r = (shordSide ? size.shortestSide : size.longestSide) / 2;
@@ -536,15 +652,6 @@ class TreeNode extends DataNode with ExtProps {
     return Rect.fromLTRB(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble());
   }
 
-  Rect get position => Rect.fromCenter(center: center, width: size.width, height: size.height);
-
-  set position(Rect rect) {
-    Offset center = rect.center;
-    x = center.dx;
-    y = center.dy;
-    size = rect.size;
-  }
-
   ///从复制当前节点及其后代
   ///复制后的节点没有parent
   TreeNode copy(TreeNode Function(TreeNode?, TreeNode) build, [int deep = 0]) {
@@ -557,7 +664,7 @@ class TreeNode extends DataNode with ExtProps {
     node.deep = deep;
     node.value = value;
     node.treeHeight = treeHeight;
-    node._count = _count;
+    node._descendantCount = _descendantCount;
     node._expand = _expand;
     for (var ele in _childrenList) {
       node.add(ele._innerCopy(build, node, deep + 1));
@@ -705,45 +812,4 @@ TreeNode? toTree2(
     return node.root;
   }
   return null;
-}
-
-///统计并计算一些信息
-///计算节点value、深度、高度
-void computeTree(TreeNode root,
-    {Fun3<TreeNode, TreeNode, int>? sortFun, bool throwError = true, bool useParent = true}) {
-  var sort = sortFun;
-  if (sort != null) {
-    root.sort(sort, true);
-  }
-  treeSumOpt(root, throwError: throwError, useParent: useParent);
-  root.setDeep(0);
-  root.computeHeight();
-  root.setMaxDeep(root.treeHeight);
-}
-
-///优化后的统计求和数据
-void treeSumOpt(TreeNode root, {bool throwError = true, bool useParent = true}) {
-  root.levelEach().eachRight((list, p1) {
-    for (var node in list) {
-      if (node.hasChild) {
-        double sum = 0;
-        for (var child in node.children) {
-          sum += child.value;
-        }
-        var value = node.value;
-        if (value.isNaN || value.isInfinite || value <= sum) {
-          node.value = sum;
-        } else {
-          node.value = useParent ? node.value : sum;
-        }
-      } else {
-        if (node.value.isInfinite || node.value.isNaN) {
-          if (throwError) {
-            throw ChartError("违法数据 ${node.data}");
-          }
-          node.value = 0;
-        }
-      }
-    }
-  });
 }

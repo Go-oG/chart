@@ -41,6 +41,7 @@ export 'sunburst/sunburst.dart';
 
 export 'themeriver/transform.dart';
 
+export 'tree/tidy/tidy.dart';
 export 'tree/compact.dart';
 export 'tree/d3_dendrogram.dart';
 export 'tree/d3_tree.dart';
