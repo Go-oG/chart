@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'cubic.dart';
+
 final class Path {
   late final ui.Path _path;
 
@@ -20,62 +22,62 @@ final class Path {
   PathFillType get fillType => _path.fillType;
 
   set fillType(PathFillType value) {
-    _list.add(PathFillTypeOperation(value));
+    _list.add(PathFillTypeOperation(_list.length, value));
     _path.fillType = value;
   }
 
   void moveTo(double x, double y) {
-    _list.add(MoveOperation(false, x, y));
+    _list.add(MoveOperation(_list.length, false, x, y));
     _path.moveTo(x, y);
   }
 
   void relativeMoveTo(double dx, double dy) {
-    _list.add(MoveOperation(true, dx, dy));
+    _list.add(MoveOperation(_list.length, true, dx, dy));
     _path.relativeMoveTo(dx, dy);
   }
 
   void lineTo(double x, double y) {
-    _list.add(LineOperation(false, x, y));
+    _list.add(LineOperation(_list.length, false, x, y));
     _path.lineTo(x, y);
   }
 
   void relativeLineTo(double dx, double dy) {
-    _list.add(LineOperation(true, dx, dy));
+    _list.add(LineOperation(_list.length, true, dx, dy));
     _path.relativeLineTo(dx, dy);
   }
 
   void quadraticBezierTo(double x1, double y1, double x2, double y2) {
-    _list.add(QuadraticBezierOperation(false, x1, y1, x2, y2));
+    _list.add(QuadraticBezierOperation(_list.length, false, x1, y1, x2, y2));
     _path.quadraticBezierTo(x1, y1, x2, y2);
   }
 
   void relativeQuadraticBezierTo(double x1, double y1, double x2, double y2) {
-    _list.add(QuadraticBezierOperation(true, x1, y1, x2, y2));
+    _list.add(QuadraticBezierOperation(_list.length, true, x1, y1, x2, y2));
     _path.relativeQuadraticBezierTo(x1, y1, x2, y2);
   }
 
   void cubicTo(double x1, double y1, double x2, double y2, double x3, double y3) {
-    _list.add(CubicOperation(false, x1, y1, x2, y2, x3, y3));
+    _list.add(CubicOperation(_list.length, false, x1, y1, x2, y2, x3, y3));
     _path.cubicTo(x1, y1, x2, y2, x3, y3);
   }
 
   void relativeCubicTo(double x1, double y1, double x2, double y2, double x3, double y3) {
-    _list.add(CubicOperation(true, x1, y1, x2, y2, x3, y3));
+    _list.add(CubicOperation(_list.length, true, x1, y1, x2, y2, x3, y3));
     _path.relativeCubicTo(x1, y1, x2, y2, x3, y3);
   }
 
   void conicTo(double x1, double y1, double x2, double y2, double w) {
-    _list.add(ConicOperation(false, x1, y1, x2, y2, w));
+    _list.add(ConicOperation(_list.length, false, x1, y1, x2, y2, w));
     _path.conicTo(x1, y1, x2, y2, w);
   }
 
   void relativeConicTo(double x1, double y1, double x2, double y2, double w) {
-    _list.add(ConicOperation(true, x1, y1, x2, y2, w));
+    _list.add(ConicOperation(_list.length, true, x1, y1, x2, y2, w));
     _path.relativeConicTo(x1, y1, x2, y2, w);
   }
 
   void arcTo(Rect rect, double startAngle, double sweepAngle, bool forceMoveTo) {
-    _list.add(ArcToOperation(rect, startAngle, sweepAngle, forceMoveTo));
+    _list.add(ArcToOperation(_list.length, rect, startAngle, sweepAngle, forceMoveTo));
     _path.arcTo(rect, startAngle, sweepAngle, forceMoveTo);
   }
 
@@ -86,7 +88,7 @@ final class Path {
     bool largeArc = false,
     bool clockwise = true,
   }) {
-    _list.add(ArcToPointOperation(false, arcEnd, radius, rotation, largeArc, clockwise));
+    _list.add(ArcToPointOperation(_list.length, false, arcEnd, radius, rotation, largeArc, clockwise));
     _path.arcToPoint(arcEnd, radius: radius, rotation: rotation, largeArc: largeArc, clockwise: clockwise);
   }
 
@@ -97,7 +99,7 @@ final class Path {
     bool largeArc = false,
     bool clockwise = true,
   }) {
-    _list.add(ArcToPointOperation(true, arcEndDelta, radius, rotation, largeArc, clockwise));
+    _list.add(ArcToPointOperation(_list.length, true, arcEndDelta, radius, rotation, largeArc, clockwise));
     _path.relativeArcToPoint(
       arcEndDelta,
       radius: radius,
@@ -108,42 +110,44 @@ final class Path {
   }
 
   void addRect(Rect rect) {
-    _list.add(RectOperation(rect));
+    _list.add(RectOperation(_list.length, rect));
     _path.addRect(rect);
   }
 
   void addOval(Rect oval) {
-    _list.add(OvalOperation(oval));
+    _list.add(OvalOperation(_list.length, oval));
     _path.addOval(oval);
   }
 
   void addArc(Rect oval, double startAngle, double sweepAngle) {
-    _list.add(ArcOperation(oval, startAngle, sweepAngle));
+    _list.add(ArcOperation(_list.length, oval, startAngle, sweepAngle));
     _path.addArc(oval, startAngle, sweepAngle);
   }
 
   void addPolygon(List<Offset> points, bool close) {
-    _list.add(PolygonOperation(points, close));
+    _list.add(PolygonOperation(_list.length, points, close));
     _path.addPolygon(points, close);
   }
 
   void addRRect(RRect rrect) {
-    _list.add(RRectOperation(rrect));
+    _list.add(RRectOperation(_list.length, rrect));
     _path.addRRect(rrect);
   }
 
   void addPath(ui.Path path, Offset offset, {Float64List? matrix4}) {
-    _list.add(PathPathOperation(path, offset, matrix4));
+    _list.add(PathPathOperation(_list.length, path, offset, matrix4));
     _path.addPath(path, offset, matrix4: matrix4);
   }
 
   void extendWithPath(ui.Path path, Offset offset, {Float64List? matrix4}) {
-    _list.add(ExtendPathOperation(path, offset, matrix4));
+    _list.add(ExtendPathOperation(_list.length, path, offset, matrix4));
     _path.extendWithPath(path, offset, matrix4: matrix4);
   }
 
   void close() {
-    _list.add(const ClosePathOperation());
+    _list.add(ClosePathOperation(
+      _list.length,
+    ));
     _path.close();
   }
 
@@ -156,7 +160,7 @@ final class Path {
 
   Path shift(Offset offset) {
     List<PathOperation> list = List.from(_list);
-    list.add(ShiftOperation(offset));
+    list.add(ShiftOperation(_list.length, offset));
 
     var path = _path.shift(offset);
     var result = Path._(path);
@@ -166,7 +170,7 @@ final class Path {
 
   Path transform(Float64List matrix4) {
     List<PathOperation> list = List.from(_list);
-    list.add(TransformPathOperation(matrix4));
+    list.add(TransformPathOperation(_list.length, matrix4));
     var path = _path.transform(matrix4);
     var result = Path._(path);
     result._list.addAll(list);
@@ -174,28 +178,38 @@ final class Path {
   }
 
   Rect getBounds() => _path.getBounds();
-
-  static ui.Path lerp(Path start, Path end, double progress) {
-
-  }
-
 }
 
 abstract class PathOperation {
+  final int index;
   final bool relative;
 
-  const PathOperation(this.relative);
+  const PathOperation(this.index, this.relative);
 
   ui.Path reappear(ui.Path path);
 
   PathType get type;
+
+  bool get isCloseEffect;
+
+  List<Cubic>? pickPivot(Path path);
+}
+
+abstract class UnEffectPathOperation extends PathOperation {
+  const UnEffectPathOperation(super.index, super.relative);
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) => null;
 }
 
 class MoveOperation extends PathOperation {
   final double x;
   final double y;
 
-  const MoveOperation(super.relative, this.x, this.y);
+  const MoveOperation(super.index, super.relative, this.x, this.y);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -205,13 +219,22 @@ class MoveOperation extends PathOperation {
 
   @override
   PathType get type => PathType.move;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class LineOperation extends PathOperation {
   final double x;
   final double y;
 
-  const LineOperation(super.relative, this.x, this.y);
+  const LineOperation(super.index, super.relative, this.x, this.y);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -221,6 +244,15 @@ class LineOperation extends PathOperation {
 
   @override
   PathType get type => PathType.line;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class QuadraticBezierOperation extends PathOperation {
@@ -229,7 +261,7 @@ class QuadraticBezierOperation extends PathOperation {
   final double x2;
   final double y2;
 
-  const QuadraticBezierOperation(super.relative, this.x1, this.y1, this.x2, this.y2);
+  const QuadraticBezierOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -239,6 +271,15 @@ class QuadraticBezierOperation extends PathOperation {
 
   @override
   PathType get type => PathType.quadraticBezier;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class CubicOperation extends PathOperation {
@@ -250,7 +291,7 @@ class CubicOperation extends PathOperation {
   final double x3;
   final double y3;
 
-  const CubicOperation(super.relative, this.x1, this.y1, this.x2, this.y2, this.x3, this.y3);
+  const CubicOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2, this.x3, this.y3);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -260,6 +301,15 @@ class CubicOperation extends PathOperation {
 
   @override
   PathType get type => PathType.cubic;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class ConicOperation extends PathOperation {
@@ -270,7 +320,7 @@ class ConicOperation extends PathOperation {
 
   final double w;
 
-  const ConicOperation(super.relative, this.x1, this.y1, this.x2, this.y2, this.w);
+  const ConicOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2, this.w);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -281,6 +331,14 @@ class ConicOperation extends PathOperation {
 
   @override
   PathType get type => PathType.conic;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    throw UnimplementedError();
+  }
 }
 
 class ArcToOperation extends PathOperation {
@@ -289,7 +347,7 @@ class ArcToOperation extends PathOperation {
   final double sweepAngle;
   final bool forceMoveTo;
 
-  const ArcToOperation(this.rect, this.startAngle, this.sweepAngle, this.forceMoveTo) : super(false);
+  const ArcToOperation(int index, this.rect, this.startAngle, this.sweepAngle, this.forceMoveTo) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -299,6 +357,15 @@ class ArcToOperation extends PathOperation {
 
   @override
   PathType get type => PathType.arcTo;
+
+  @override
+  bool get isCloseEffect => false;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class ArcToPointOperation extends PathOperation {
@@ -308,7 +375,8 @@ class ArcToPointOperation extends PathOperation {
   final bool largeArc;
   final bool clockwise;
 
-  const ArcToPointOperation(super.relative, this.arcEnd, this.radius, this.rotation, this.largeArc, this.clockwise);
+  const ArcToPointOperation(
+      super.index, super.relative, this.arcEnd, this.radius, this.rotation, this.largeArc, this.clockwise);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -322,12 +390,22 @@ class ArcToPointOperation extends PathOperation {
 
   @override
   PathType get type => PathType.arcToPoint;
+
+  @override
+  // TODO: implement isCloseEffect
+  bool get isCloseEffect => throw UnimplementedError();
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class RectOperation extends PathOperation {
   final Rect rect;
 
-  const RectOperation(this.rect) : super(false);
+  const RectOperation(int index, this.rect) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -337,12 +415,21 @@ class RectOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addRect;
+
+  @override
+  bool get isCloseEffect => true;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class OvalOperation extends PathOperation {
   final Rect oval;
 
-  const OvalOperation(this.oval) : super(false);
+  const OvalOperation(int index, this.oval) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -352,6 +439,14 @@ class OvalOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addOval;
+
+  @override
+  bool get isCloseEffect => true;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    throw UnimplementedError();
+  }
 }
 
 class ArcOperation extends PathOperation {
@@ -359,7 +454,7 @@ class ArcOperation extends PathOperation {
   final double startAngle;
   final double sweepAngle;
 
-  const ArcOperation(this.oval, this.startAngle, this.sweepAngle) : super(false);
+  const ArcOperation(int index, this.oval, this.startAngle, this.sweepAngle) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -369,13 +464,23 @@ class ArcOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addArc;
+
+  @override
+  // TODO: implement isCloseEffect
+  bool get isCloseEffect => throw UnimplementedError();
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class PolygonOperation extends PathOperation {
   final List<Offset> points;
   final bool close;
 
-  const PolygonOperation(this.points, this.close) : super(false);
+  const PolygonOperation(int index, this.points, this.close) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -385,12 +490,22 @@ class PolygonOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addPolygon;
+
+  @override
+  // TODO: implement isCloseEffect
+  bool get isCloseEffect => throw UnimplementedError();
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class RRectOperation extends PathOperation {
   final RRect rrect;
 
-  const RRectOperation(this.rrect) : super(false);
+  const RRectOperation(int index, this.rrect) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -400,6 +515,15 @@ class RRectOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addRrect;
+
+  @override
+  bool get isCloseEffect => true;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class PathPathOperation extends PathOperation {
@@ -407,7 +531,7 @@ class PathPathOperation extends PathOperation {
   final Offset offset;
   final Float64List? matrix4;
 
-  const PathPathOperation(this.path, this.offset, this.matrix4) : super(false);
+  const PathPathOperation(int index, this.path, this.offset, this.matrix4) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -417,6 +541,16 @@ class PathPathOperation extends PathOperation {
 
   @override
   PathType get type => PathType.addPath;
+
+  @override
+  // TODO: implement isCloseEffect
+  bool get isCloseEffect => throw UnimplementedError();
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class ExtendPathOperation extends PathOperation {
@@ -424,7 +558,7 @@ class ExtendPathOperation extends PathOperation {
   final Offset offset;
   final Float64List? matrix4;
 
-  const ExtendPathOperation(this.path, this.offset, this.matrix4) : super(false);
+  const ExtendPathOperation(int index, this.path, this.offset, this.matrix4) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -434,10 +568,20 @@ class ExtendPathOperation extends PathOperation {
 
   @override
   PathType get type => PathType.extendsPath;
+
+  @override
+  // TODO: implement isCloseEffect
+  bool get isCloseEffect => throw UnimplementedError();
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
 class ClosePathOperation extends PathOperation {
-  const ClosePathOperation() : super(false);
+  const ClosePathOperation(int index) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -447,12 +591,21 @@ class ClosePathOperation extends PathOperation {
 
   @override
   PathType get type => PathType.close;
+
+  @override
+  bool get isCloseEffect => true;
+
+  @override
+  List<Cubic>? pickPivot(Path path) {
+    // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
 }
 
-class ShiftOperation extends PathOperation {
+class ShiftOperation extends UnEffectPathOperation {
   final Offset offset;
 
-  const ShiftOperation(this.offset) : super(false);
+  const ShiftOperation(int index, this.offset) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -463,10 +616,10 @@ class ShiftOperation extends PathOperation {
   PathType get type => PathType.shift;
 }
 
-class TransformPathOperation extends PathOperation {
+class TransformPathOperation extends UnEffectPathOperation {
   final Float64List matrix4;
 
-  const TransformPathOperation(this.matrix4) : super(false);
+  const TransformPathOperation(int index, this.matrix4) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
@@ -477,10 +630,10 @@ class TransformPathOperation extends PathOperation {
   PathType get type => PathType.transform;
 }
 
-class PathFillTypeOperation extends PathOperation {
+class PathFillTypeOperation extends UnEffectPathOperation {
   final PathFillType fillType;
 
-  PathFillTypeOperation(this.fillType) : super(false);
+  PathFillTypeOperation(int index, this.fillType) : super(index, false);
 
   @override
   ui.Path reappear(ui.Path path) {
