@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
@@ -193,6 +194,19 @@ abstract class PathOperation {
   bool get isCloseEffect;
 
   List<Cubic>? pickPivot(Path path);
+
+  ui.Offset? pickEndPosition(Path path);
+
+  ui.Offset? pickPreLastPosition(Path path) {
+    ui.Offset? end;
+    for (int i = index - 1; i >= 0; i--) {
+      end = path._list[i].pickEndPosition(path);
+      if (end != null) {
+        break;
+      }
+    }
+    return end;
+  }
 }
 
 abstract class UnEffectPathOperation extends PathOperation {
@@ -224,9 +238,16 @@ class MoveOperation extends PathOperation {
   bool get isCloseEffect => false;
 
   @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
+  List<Cubic>? pickPivot(Path path) => null;
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return ui.Offset(x, y);
+    }
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return ui.Offset(x, y) + end;
   }
 }
 
@@ -252,6 +273,16 @@ class LineOperation extends PathOperation {
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return ui.Offset(x, y);
+    }
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return ui.Offset(x, y) + end;
   }
 }
 
@@ -279,6 +310,16 @@ class QuadraticBezierOperation extends PathOperation {
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return ui.Offset(x2, y2);
+    }
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return ui.Offset(x2, y2) + end;
   }
 }
 
@@ -310,6 +351,17 @@ class CubicOperation extends PathOperation {
     // TODO: implement pickPivot
     throw UnimplementedError();
   }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return ui.Offset(x3, y3);
+    }
+
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return ui.Offset(x3, y3) + end;
+  }
 }
 
 class ConicOperation extends PathOperation {
@@ -325,7 +377,6 @@ class ConicOperation extends PathOperation {
   @override
   ui.Path reappear(ui.Path path) {
     relative ? path.relativeConicTo(x1, y1, x2, y2, w) : path.conicTo(x1, y1, x2, y2, w);
-
     return path;
   }
 
@@ -338,6 +389,16 @@ class ConicOperation extends PathOperation {
   @override
   List<Cubic>? pickPivot(Path path) {
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return ui.Offset(x2, y2);
+    }
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return ui.Offset(x2, y2) + end;
   }
 }
 
@@ -365,6 +426,13 @@ class ArcToOperation extends PathOperation {
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    var angle = (startAngle + sweepAngle) * pi / 180;
+    var center = rect.center;
+    return ui.Offset(center.dx + cos(angle) * rect.width, center.dy + sin(angle) * rect.height);
   }
 }
 
@@ -400,6 +468,16 @@ class ArcToPointOperation extends PathOperation {
     // TODO: implement pickPivot
     throw UnimplementedError();
   }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    if (!relative) {
+      return arcEnd;
+    }
+    ui.Offset? end = pickPreLastPosition(path);
+    end ??= ui.Offset.zero;
+    return arcEnd + end;
+  }
 }
 
 class RectOperation extends PathOperation {
@@ -424,6 +502,11 @@ class RectOperation extends PathOperation {
     // TODO: implement pickPivot
     throw UnimplementedError();
   }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    return rect.bottomLeft;
+  }
 }
 
 class OvalOperation extends PathOperation {
@@ -447,6 +530,11 @@ class OvalOperation extends PathOperation {
   List<Cubic>? pickPivot(Path path) {
     throw UnimplementedError();
   }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    return oval.centerLeft;
+  }
 }
 
 class ArcOperation extends PathOperation {
@@ -466,12 +554,17 @@ class ArcOperation extends PathOperation {
   PathType get type => PathType.addArc;
 
   @override
-  // TODO: implement isCloseEffect
-  bool get isCloseEffect => throw UnimplementedError();
+  bool get isCloseEffect => (sweepAngle.abs() % 360) == 0;
 
   @override
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
+    throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    // TODO: implement pickEndPosition
     throw UnimplementedError();
   }
 }
@@ -492,13 +585,17 @@ class PolygonOperation extends PathOperation {
   PathType get type => PathType.addPolygon;
 
   @override
-  // TODO: implement isCloseEffect
-  bool get isCloseEffect => throw UnimplementedError();
+  bool get isCloseEffect => close;
 
   @override
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+    return points.last;
   }
 }
 
@@ -523,6 +620,11 @@ class RRectOperation extends PathOperation {
   List<Cubic>? pickPivot(Path path) {
     // TODO: implement pickPivot
     throw UnimplementedError();
+  }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) {
+   return ui.Offset(rrect.left, rrect.bottom-rrect.blRadiusY);
   }
 }
 
@@ -600,6 +702,9 @@ class ClosePathOperation extends PathOperation {
     // TODO: implement pickPivot
     throw UnimplementedError();
   }
+
+  @override
+  ui.Offset? pickEndPosition(Path path) =>null;
 }
 
 class ShiftOperation extends UnEffectPathOperation {
@@ -614,6 +719,9 @@ class ShiftOperation extends UnEffectPathOperation {
 
   @override
   PathType get type => PathType.shift;
+
+  @override
+  ui.Offset? pickEndPosition(Path path)=>null;
 }
 
 class TransformPathOperation extends UnEffectPathOperation {
@@ -628,6 +736,9 @@ class TransformPathOperation extends UnEffectPathOperation {
 
   @override
   PathType get type => PathType.transform;
+
+  @override
+  ui.Offset? pickEndPosition(Path path) =>null;
 }
 
 class PathFillTypeOperation extends UnEffectPathOperation {
@@ -643,6 +754,9 @@ class PathFillTypeOperation extends UnEffectPathOperation {
 
   @override
   PathType get type => PathType.fillType;
+
+  @override
+  ui.Offset? pickEndPosition(Path path) =>null;
 }
 
 enum PathType {
