@@ -3,14 +3,21 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:e_paths/src/raw_operation.dart';
+import 'package:flutter/rendering.dart';
+
 import 'cubic.dart';
 
+typedef PathSegment = List<Cubic>;
+
 final class Path {
-  late final ui.Path _path;
+  late ui.Path _path;
 
   ui.Path get rawPath => _path;
 
-  final List<PathOperation> _list = [];
+  final List<RawOperation> _list = [];
+
+  List<RawOperation> get operationList => _list;
 
   Path() {
     _path = ui.Path();
@@ -18,6 +25,17 @@ final class Path {
 
   Path._(ui.Path p) {
     _path = p;
+  }
+
+  Path copy() {
+    var path = Path();
+    path._path = ui.Path.from(_path);
+    path._list.addAll(_list);
+    return path;
+  }
+
+  void draw(ui.Canvas canvas, ui.Paint paint) {
+    canvas.drawPath(_path, paint);
   }
 
   PathFillType get fillType => _path.fillType;
@@ -32,6 +50,10 @@ final class Path {
     _path.moveTo(x, y);
   }
 
+  void moveTo2(Offset offset) {
+    moveTo(offset.dx, offset.dy);
+  }
+
   void relativeMoveTo(double dx, double dy) {
     _list.add(MoveOperation(_list.length, true, dx, dy));
     _path.relativeMoveTo(dx, dy);
@@ -40,6 +62,10 @@ final class Path {
   void lineTo(double x, double y) {
     _list.add(LineOperation(_list.length, false, x, y));
     _path.lineTo(x, y);
+  }
+
+  void lineTo2(Offset offset) {
+    lineTo(offset.dx, offset.dy);
   }
 
   void relativeLineTo(double dx, double dy) {
@@ -135,9 +161,9 @@ final class Path {
     _path.addRRect(rrect);
   }
 
-  void addPath(ui.Path path, Offset offset, {Float64List? matrix4}) {
+  void addPath(Path path, Offset offset, {Float64List? matrix4}) {
     _list.add(PathPathOperation(_list.length, path, offset, matrix4));
-    _path.addPath(path, offset, matrix4: matrix4);
+    _path.addPath(path.rawPath, offset, matrix4: matrix4);
   }
 
   void extendWithPath(ui.Path path, Offset offset, {Float64List? matrix4}) {
@@ -157,10 +183,31 @@ final class Path {
     _path.reset();
   }
 
+  PathMetrics computeMetrics({bool forceClosed = false}) {
+    return rawPath.computeMetrics(forceClosed: forceClosed);
+  }
+
   bool contains(Offset point) => _path.contains(point);
 
+  bool overlapRect(Rect rect) {
+    if (contains(rect.topLeft)) {
+      return true;
+    }
+    if (contains(rect.topRight)) {
+      return true;
+    }
+    if (contains(rect.bottomLeft)) {
+      return true;
+    }
+    if (contains(rect.bottomRight)) {
+      return true;
+    }
+    var bound = getBounds();
+    return bound.overlaps(rect);
+  }
+
   Path shift(Offset offset) {
-    List<PathOperation> list = List.from(_list);
+    List<RawOperation> list = List.from(_list);
     list.add(ShiftOperation(_list.length, offset));
 
     var path = _path.shift(offset);
@@ -170,7 +217,7 @@ final class Path {
   }
 
   Path transform(Float64List matrix4) {
-    List<PathOperation> list = List.from(_list);
+    List<RawOperation> list = List.from(_list);
     list.add(TransformPathOperation(_list.length, matrix4));
     var path = _path.transform(matrix4);
     var result = Path._(path);
@@ -179,608 +226,265 @@ final class Path {
   }
 
   Rect getBounds() => _path.getBounds();
-}
 
-abstract class PathOperation {
-  final int index;
-  final bool relative;
-
-  const PathOperation(this.index, this.relative);
-
-  ui.Path reappear(ui.Path path);
-
-  PathType get type;
-
-  bool get isCloseEffect;
-
-  List<Cubic>? pickPivot(Path path);
-
-  ui.Offset? pickEndPosition(Path path);
-
-  ui.Offset? pickPreLastPosition(Path path) {
-    ui.Offset? end;
-    for (int i = index - 1; i >= 0; i--) {
-      end = path._list[i].pickEndPosition(path);
-      if (end != null) {
-        break;
+  List<List<PathSegment>> pickSegment() {
+    List<List<PathSegment>> result = [];
+    List<PathSegment> next = [];
+    for (var item in _list) {
+      var rr = item.pickSegment(this);
+      if (rr != null && rr.isNotEmpty) {
+        next.add(rr);
+      }
+      if (item.effectPathLevel) {
+        if (next.isNotEmpty) {
+          result.add(next);
+          next = [];
+        }
       }
     }
-    return end;
-  }
-}
-
-abstract class UnEffectPathOperation extends PathOperation {
-  const UnEffectPathOperation(super.index, super.relative);
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) => null;
-}
-
-class MoveOperation extends PathOperation {
-  final double x;
-  final double y;
-
-  const MoveOperation(super.index, super.relative, this.x, this.y);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    relative ? path.relativeMoveTo(x, y) : path.moveTo(x, y);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.move;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) => null;
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x, y);
+    if (next.isNotEmpty) {
+      result.add(next);
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x, y) + end;
-  }
-}
-
-class LineOperation extends PathOperation {
-  final double x;
-  final double y;
-
-  const LineOperation(super.index, super.relative, this.x, this.y);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    relative ? path.relativeLineTo(x, y) : path.lineTo(x, y);
-    return path;
+    return result;
   }
 
-  @override
-  PathType get type => PathType.line;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x, y);
+  static ui.Path dash(ui.Path path, List<double> dash) {
+    if (dash.isEmpty) {
+      return path;
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x, y) + end;
-  }
-}
-
-class QuadraticBezierOperation extends PathOperation {
-  final double x1;
-  final double y1;
-  final double x2;
-  final double y2;
-
-  const QuadraticBezierOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    relative ? path.relativeQuadraticBezierTo(x1, y1, x2, y2) : path.quadraticBezierTo(x1, y1, x2, y2);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.quadraticBezier;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x2, y2);
+    double dashLength = dash[0];
+    double dashGapLength = dashLength >= 2 ? dash[1] : dash[0];
+    DashHelper helper = DashHelper(
+      path: ui.Path(),
+      dashLength: dashLength,
+      dashGapLength: dashGapLength,
+    );
+    final metricsIterator = path.computeMetrics().iterator;
+    while (metricsIterator.moveNext()) {
+      final metric = metricsIterator.current;
+      helper.extractedPathLength = 0.0;
+      while (helper.extractedPathLength < metric.length) {
+        if (helper.addDashNext) {
+          helper.addDash(metric, dashLength);
+        } else {
+          helper.addDashGap(metric, dashGapLength);
+        }
+      }
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x2, y2) + end;
-  }
-}
-
-class CubicOperation extends PathOperation {
-  final double x1;
-  final double y1;
-  final double x2;
-  final double y2;
-
-  final double x3;
-  final double y3;
-
-  const CubicOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2, this.x3, this.y3);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    relative ? path.relativeCubicTo(x1, y1, x2, y2, x3, y3) : path.cubicTo(x1, y1, x2, y2, x3, y3);
-    return path;
+    return helper.path;
   }
 
-  @override
-  PathType get type => PathType.cubic;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x3, y3);
+  /// 给定一个Path和路径百分比返回给定百分比路径
+  static ui.Path percentPath(ui.Path path, double percent) {
+    if (percent >= 1) {
+      return path;
     }
-
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x3, y3) + end;
-  }
-}
-
-class ConicOperation extends PathOperation {
-  final double x1;
-  final double y1;
-  final double x2;
-  final double y2;
-
-  final double w;
-
-  const ConicOperation(super.index, super.relative, this.x1, this.y1, this.x2, this.y2, this.w);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    relative ? path.relativeConicTo(x1, y1, x2, y2, w) : path.conicTo(x1, y1, x2, y2, w);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.conic;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x2, y2);
+    if (percent <= 0) {
+      return path;
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x2, y2) + end;
-  }
-}
+    PathMetrics metrics = path.computeMetrics();
+    ui.Path newPath = ui.Path();
 
-class ArcToOperation extends PathOperation {
-  final Rect rect;
-  final double startAngle;
-  final double sweepAngle;
-  final bool forceMoveTo;
-
-  const ArcToOperation(int index, this.rect, this.startAngle, this.sweepAngle, this.forceMoveTo) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.arcTo(rect, startAngle, sweepAngle, forceMoveTo);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.arcTo;
-
-  @override
-  bool get isCloseEffect => false;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    var angle = (startAngle + sweepAngle) * pi / 180;
-    var center = rect.center;
-    return ui.Offset(center.dx + cos(angle) * rect.width, center.dy + sin(angle) * rect.height);
-  }
-}
-
-class ArcToPointOperation extends PathOperation {
-  final Offset arcEnd;
-  final Radius radius;
-  final double rotation;
-  final bool largeArc;
-  final bool clockwise;
-
-  const ArcToPointOperation(
-      super.index, super.relative, this.arcEnd, this.radius, this.rotation, this.largeArc, this.clockwise);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    if (relative) {
-      path.relativeArcToPoint(arcEnd, radius: radius, rotation: rotation, largeArc: largeArc, clockwise: clockwise);
-    } else {
-      path.arcToPoint(arcEnd, radius: radius, rotation: rotation, largeArc: largeArc, clockwise: clockwise);
+    for (PathMetric metric in metrics) {
+      ui.Path tmp = metric.extractPath(0, metric.length * percent);
+      newPath.addPath(tmp, Offset.zero);
     }
-    return path;
+    return newPath;
   }
 
-  @override
-  PathType get type => PathType.arcToPoint;
-
-  @override
-  // TODO: implement isCloseEffect
-  bool get isCloseEffect => throw UnimplementedError();
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return arcEnd;
+  static Offset? percentOffset(ui.Path path, double percent) {
+    PathMetrics metrics = path.computeMetrics();
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(metric.length * percent);
+      if (result == null) {
+        continue;
+      }
+      return result.position;
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return arcEnd + end;
-  }
-}
-
-class RectOperation extends PathOperation {
-  final Rect rect;
-
-  const RectOperation(int index, this.rect) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addRect(rect);
-    return path;
+    return null;
   }
 
-  @override
-  PathType get type => PathType.addRect;
-
-  @override
-  bool get isCloseEffect => true;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
+  static Offset? firstOffset(ui.Path path) {
+    PathMetrics metrics = path.computeMetrics();
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(1);
+      if (result == null) {
+        continue;
+      }
+      return result.position;
+    }
+    return null;
   }
 
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    return rect.bottomLeft;
-  }
-}
-
-class OvalOperation extends PathOperation {
-  final Rect oval;
-
-  const OvalOperation(int index, this.oval) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addOval(oval);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.addOval;
-
-  @override
-  bool get isCloseEffect => true;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    throw UnimplementedError();
+  static Offset? lastOffset(ui.Path path) {
+    PathMetrics metrics = path.computeMetrics();
+    List<Offset> ol = [];
+    for (PathMetric metric in metrics) {
+      if (metric.length <= 0) {
+        continue;
+      }
+      var result = metric.getTangentForOffset(metric.length);
+      if (result == null) {
+        continue;
+      }
+      ol.add(result.position);
+    }
+    if (ol.isEmpty) {
+      return null;
+    }
+    return ol[ol.length - 1];
   }
 
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    return oval.centerLeft;
-  }
-}
-
-class ArcOperation extends PathOperation {
-  final Rect oval;
-  final double startAngle;
-  final double sweepAngle;
-
-  const ArcOperation(int index, this.oval, this.startAngle, this.sweepAngle) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addArc(oval, startAngle, sweepAngle);
-    return path;
+  static double getLength(ui.Path path) {
+    double l = 0;
+    for (PathMetric metric in path.computeMetrics()) {
+      l += metric.length;
+    }
+    return l;
   }
 
-  @override
-  PathType get type => PathType.addArc;
+  ///将当前Path进行拆分
+  List<ui.Path> split([double maxLength = 300]) {
+    List<ui.Path> pathList = [];
 
-  @override
-  bool get isCloseEffect => (sweepAngle.abs() % 360) == 0;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
+    for (PathMetric metric in computeMetrics()) {
+      final double length = metric.length;
+      if (metric.length <= 0) {
+        continue;
+      }
+      if (length <= maxLength) {
+        pathList.add(metric.extractPath(0, length));
+        continue;
+      }
+      double start = 0;
+      while (start < length) {
+        double end = start + maxLength;
+        if (end > length) {
+          end = length;
+        }
+        pathList.add(metric.extractPath(start, end));
+        if (end >= length) {
+          break;
+        }
+        start += maxLength;
+      }
+    }
+    return pathList;
   }
 
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    // TODO: implement pickEndPosition
-    throw UnimplementedError();
-  }
-}
-
-class PolygonOperation extends PathOperation {
-  final List<Offset> points;
-  final bool close;
-
-  const PolygonOperation(int index, this.points, this.close) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addPolygon(points, close);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.addPolygon;
-
-  @override
-  bool get isCloseEffect => close;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-    return points.last;
-  }
-}
-
-class RRectOperation extends PathOperation {
-  final RRect rrect;
-
-  const RRectOperation(int index, this.rrect) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addRRect(rrect);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.addRrect;
-
-  @override
-  bool get isCloseEffect => true;
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-
-  @override
-  ui.Offset? pickEndPosition(Path path) {
-   return ui.Offset(rrect.left, rrect.bottom-rrect.blRadiusY);
-  }
-}
-
-class PathPathOperation extends PathOperation {
-  final ui.Path path;
-  final Offset offset;
-  final Float64List? matrix4;
-
-  const PathPathOperation(int index, this.path, this.offset, this.matrix4) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.addPath(path, offset, matrix4: matrix4);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.addPath;
-
-  @override
-  // TODO: implement isCloseEffect
-  bool get isCloseEffect => throw UnimplementedError();
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-}
-
-class ExtendPathOperation extends PathOperation {
-  final ui.Path path;
-  final Offset offset;
-  final Float64List? matrix4;
-
-  const ExtendPathOperation(int index, this.path, this.offset, this.matrix4) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.extendWithPath(path, offset, matrix4: matrix4);
-    return path;
-  }
-
-  @override
-  PathType get type => PathType.extendsPath;
-
-  @override
-  // TODO: implement isCloseEffect
-  bool get isCloseEffect => throw UnimplementedError();
-
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
-  }
-}
-
-class ClosePathOperation extends PathOperation {
-  const ClosePathOperation(int index) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
+  ///合并两个Path,并将其头相连，尾相连
+  Path mergePath(Path p2) {
+    Path path = this;
+    PathMetric metric = p2.computeMetrics().single;
+    double length = metric.length;
+    while (length >= 0) {
+      Tangent? t = metric.getTangentForOffset(length);
+      if (t != null) {
+        Offset offset = t.position;
+        path.lineTo(offset.dx, offset.dy);
+      }
+      length -= 1;
+    }
     path.close();
     return path;
   }
 
-  @override
-  PathType get type => PathType.close;
+  void drawShadows(Path path, List<BoxShadow> shadows, void Function(Path path, ui.Paint paint) canvasCall) {
+    for (final BoxShadow shadow in shadows) {
+      final Paint shadowPainter = shadow.toPaint();
+      if (shadow.spreadRadius == 0) {
+        canvasCall.call(path.shift(shadow.offset), shadowPainter);
+      } else {
+        Rect zone = path.getBounds();
+        double xScale = (zone.width + shadow.spreadRadius) / zone.width;
+        double yScale = (zone.height + shadow.spreadRadius) / zone.height;
+        Matrix4 m4 = Matrix4.identity();
+        m4.translate(zone.width / 2, zone.height / 2);
+        m4.scale(xScale, yScale);
+        m4.translate(-zone.width / 2, -zone.height / 2);
+        canvasCall.call(path.shift(shadow.offset).transform(m4.storage), shadowPainter);
+      }
+    }
+  }
+}
 
-  @override
-  bool get isCloseEffect => true;
+class DashHelper {
+  double extractedPathLength;
+  ui.Path path;
 
-  @override
-  List<Cubic>? pickPivot(Path path) {
-    // TODO: implement pickPivot
-    throw UnimplementedError();
+  final double _dashLength;
+  double _remainingDashLength;
+  double _remainingDashGapLength;
+  bool _previousWasDash;
+
+  DashHelper({
+    required this.path,
+    required double dashLength,
+    required double dashGapLength,
+  })  : assert(dashLength > 0.0, 'dashLength must be > 0.0'),
+        assert(dashGapLength > 0.0, 'dashGapLength must be > 0.0'),
+        _dashLength = dashLength,
+        _remainingDashLength = dashLength,
+        _remainingDashGapLength = dashGapLength,
+        _previousWasDash = false,
+        extractedPathLength = 0.0;
+
+  bool get addDashNext {
+    if (!_previousWasDash || _remainingDashLength != _dashLength) {
+      return true;
+    }
+    return false;
   }
 
-  @override
-  ui.Offset? pickEndPosition(Path path) =>null;
-}
-
-class ShiftOperation extends UnEffectPathOperation {
-  final Offset offset;
-
-  const ShiftOperation(int index, this.offset) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    return path.shift(offset);
+  void addDash(PathMetric metric, double dashLength) {
+    final end = _calculateLength(metric, _remainingDashLength).toDouble();
+    final availableEnd = _calculateLength(metric, dashLength);
+    final pathSegment = metric.extractPath(extractedPathLength.toDouble(), end);
+    path.addPath(pathSegment, Offset.zero);
+    final delta = _remainingDashLength - (end - extractedPathLength);
+    _remainingDashLength = _updateRemainingLength(
+      delta: delta,
+      end: end,
+      availableEnd: availableEnd,
+      initialLength: dashLength,
+    );
+    extractedPathLength = end;
+    _previousWasDash = true;
   }
 
-  @override
-  PathType get type => PathType.shift;
-
-  @override
-  ui.Offset? pickEndPosition(Path path)=>null;
-}
-
-class TransformPathOperation extends UnEffectPathOperation {
-  final Float64List matrix4;
-
-  const TransformPathOperation(int index, this.matrix4) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    return path.transform(matrix4);
+  void addDashGap(PathMetric metric, double dashGapLength) {
+    final end = _calculateLength(metric, _remainingDashGapLength);
+    final availableEnd = _calculateLength(metric, dashGapLength);
+    Tangent tangent = metric.getTangentForOffset(end.toDouble())!;
+    path.moveTo(tangent.position.dx, tangent.position.dy);
+    final delta = end - extractedPathLength;
+    _remainingDashGapLength = _updateRemainingLength(
+      delta: delta,
+      end: end,
+      availableEnd: availableEnd,
+      initialLength: dashGapLength,
+    );
+    extractedPathLength = end;
+    _previousWasDash = false;
   }
 
-  @override
-  PathType get type => PathType.transform;
-
-  @override
-  ui.Offset? pickEndPosition(Path path) =>null;
-}
-
-class PathFillTypeOperation extends UnEffectPathOperation {
-  final PathFillType fillType;
-
-  PathFillTypeOperation(int index, this.fillType) : super(index, false);
-
-  @override
-  ui.Path reappear(ui.Path path) {
-    path.fillType = fillType;
-    return path;
+  double _calculateLength(PathMetric metric, double addedLength) {
+    return min(extractedPathLength + addedLength, metric.length);
   }
 
-  @override
-  PathType get type => PathType.fillType;
-
-  @override
-  ui.Offset? pickEndPosition(Path path) =>null;
+  double _updateRemainingLength({
+    required double delta,
+    required double end,
+    required double availableEnd,
+    required double initialLength,
+  }) {
+    return (delta > 0 && availableEnd == end) ? delta : initialLength;
+  }
 }
 
-enum PathType {
-  move(true),
-  line(true),
-  quadraticBezier(true),
-  cubic(true),
-  conic(true),
-  arcTo(false),
-  arcToPoint(true),
-  addRect(false),
-  addOval(false),
-  addArc(false),
-  addPolygon(false),
-  addRrect(false),
-  addPath(false),
-  extendsPath(false),
-  close(false),
-  shift(false),
-  transform(false),
-  fillType(false),
-  ;
-
-  final bool allowRelative;
-
-  const PathType(this.allowRelative);
-}
