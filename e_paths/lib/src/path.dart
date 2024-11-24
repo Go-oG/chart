@@ -231,7 +231,7 @@ final class Path {
     List<List<PathSegment>> result = [];
     List<PathSegment> next = [];
     for (var item in _list) {
-      var rr = item.pickSegment(this);
+      var rr = item.pickBorder(this);
       if (rr != null && rr.isNotEmpty) {
         next.add(rr);
       }

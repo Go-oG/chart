@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:e_paths/src/path.dart';
+import 'package:e_paths/src/path_morph.dart';
 import 'package:flutter/semantics.dart';
 import 'cubic.dart';
 
@@ -15,10 +16,11 @@ abstract class RawOperation {
 
   PathType get type;
 
-  ///标识该操作是否会创建一个新的层
+  ///标识该操作是否会影响出现新的层
   bool get effectPathLevel;
 
-  PathSegment? pickSegment(Path path);
+  ///提取当前操作对应的border
+  List<Cubic>? pickBorder(Path path);
 
   ui.Offset? pickEndPosition(Path path);
 
@@ -41,7 +43,7 @@ abstract class UnEffectPathOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) => null;
+  PathSegment? pickBorder(Path path) => null;
 }
 
 class MoveOperation extends RawOperation {
@@ -63,7 +65,7 @@ class MoveOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) => null;
+  PathSegment? pickBorder(Path path) => null;
 
   @override
   ui.Offset? pickEndPosition(Path path) {
@@ -95,7 +97,7 @@ class LineOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     final pre = pickPreLastPosition(path);
     if (pre == null) {
       throw "get pre offset error";
@@ -136,7 +138,7 @@ class QuadraticBezierOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     final pre = pickPreLastPosition(path);
     if (pre == null) {
       throw "get pre offset error";
@@ -181,7 +183,7 @@ class CubicOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     final pre = pickPreLastPosition(path);
     if (pre == null) {
       throw "get pre offset error";
@@ -226,7 +228,7 @@ class ConicOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     final pre = pickPreLastPosition(path);
     if (pre == null) {
       throw "get pre offset error";
@@ -271,7 +273,7 @@ class ArcToOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     return [Cubic.ofArc(rect, startAngle, sweepAngle, forceMoveTo)];
   }
 
@@ -310,7 +312,7 @@ class ArcToPointOperation extends RawOperation {
   bool get effectPathLevel => false;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     var pre = pickPreLastPosition(path);
     pre ??= ui.Offset.zero;
     if (relative) {
@@ -349,7 +351,7 @@ class RectOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     final topLeft = rect.topLeft;
     final topRight = rect.topRight;
     final bottomRight = rect.bottomRight;
@@ -385,7 +387,7 @@ class OvalOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     return Cubic.ofOval(oval);
   }
 
@@ -413,7 +415,7 @@ class ArcOperation extends RawOperation {
   bool get effectPathLevel => (sweepAngle.abs() % 360) == 0;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     return [Cubic.ofArc(oval, startAngle, sweepAngle, false)];
   }
 
@@ -440,7 +442,7 @@ class PolygonOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     List<Cubic> result = [];
     ui.Offset? pre;
     for (var item in points) {
@@ -482,7 +484,7 @@ class RRectOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     return Cubic.ofRRect(rrect);
   }
 
@@ -512,7 +514,7 @@ class PathPathOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     List<Cubic> list = [];
     for (var item in this.path.pickSegment()) {
       for (var item2 in item) {
@@ -546,7 +548,7 @@ class ExtendPathOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     List<Cubic> cl = [];
     for (var item in path.pickSegment()) {
       for (var cu in item) {
@@ -588,7 +590,7 @@ class ClosePathOperation extends RawOperation {
   bool get effectPathLevel => true;
 
   @override
-  PathSegment? pickSegment(Path path) {
+  PathSegment? pickBorder(Path path) {
     var end = pickPreLastPosition(path);
     end ??= ui.Offset.zero;
     ui.Offset first = end;
