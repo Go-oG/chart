@@ -235,7 +235,7 @@ final class Path {
       if (rr != null && rr.isNotEmpty) {
         next.add(rr);
       }
-      if (item.effectPathLevel) {
+      if (item.isStandAlonePath) {
         if (next.isNotEmpty) {
           result.add(next);
           next = [];

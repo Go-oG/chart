@@ -35,13 +35,13 @@ class MyPainter extends mat.CustomPainter {
     mPaint.color = mat.Colors.deepPurple;
     canvas.drawPath(p2.rawPath, mPaint);
 
-    mPaint.style = PaintingStyle.fill;
-    for (var item in morph.getControlPoints(true)) {
-      mPaint.color = randomColor();
-      for (var cc in item) {
-        canvas.drawCircle(cc, 6, mPaint);
-      }
-    }
+    // mPaint.style = PaintingStyle.fill;
+    // for (var item in morph.getControlPoints(true)) {
+    //   mPaint.color = randomColor();
+    //   for (var cc in item) {
+    //     canvas.drawCircle(cc, 6, mPaint);
+    //   }
+    // }
 
     mPaint.color = mat.Colors.red;
     for (var item in morph.getControlPoints(false)) {
@@ -51,7 +51,7 @@ class MyPainter extends mat.CustomPainter {
     }
     mPaint.style = PaintingStyle.stroke;
 
-    canvas.drawPath(morph.lerp(controller.value,true), mPaint);
+  //  canvas.drawPath(morph.lerp(controller.value,true), mPaint);
   }
 
   void _initIfNeed(Size size) {

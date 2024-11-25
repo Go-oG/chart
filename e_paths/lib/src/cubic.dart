@@ -286,6 +286,15 @@ final class Cubic {
     return d1 + d2 + d3 + d4;
   }
 
-
-
+  bool get isLine {
+    double cross(Offset p0, Offset p1) {
+      return (p0.dx * p1.dy - p0.dy * p1.dx);
+    }
+    final v1 = control1 - start;
+    final v2 = control2 - start;
+    final v3 = end - start;
+    double cross1 = cross(v1, v2);
+    double cross2 = cross(v1, v3);
+    return (cross1 - cross2).abs() <= 0.000000001 && cross1.abs() <= 0.000000001;
+  }
 }

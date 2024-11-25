@@ -19,7 +19,6 @@ class PathMorph {
     final startList = computeSubPath(start);
     final endList = computeSubPath(end);
     _adjustSubPathCount(startList, endList);
-
     final maxV = startList.length;
     for (var i = 0; i < maxV; i++) {
       _adjustSinglePathBorder(startList[i], endList[i]);
@@ -118,7 +117,7 @@ class PathMorph {
     List<Cubic> borderList = [];
 
     for (var item in path.operationList) {
-      if (item.effectPathLevel) {
+      if (item.isStandAlonePath) {
         if (borderList.isNotEmpty) {
           result.add(SubPath(borderList));
           borderList = [];

@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:e_paths/src/path.dart';
-import 'package:e_paths/src/path_morph.dart';
 import 'package:flutter/semantics.dart';
 import 'cubic.dart';
 
@@ -16,18 +15,22 @@ abstract class RawOperation {
 
   PathType get type;
 
-  ///标识该操作是否会影响出现新的层
-  bool get effectPathLevel;
+  ///标识该操作是否是一条单独的路径
+  bool get isStandAlonePath;
 
   ///提取当前操作对应的border
   List<Cubic>? pickBorder(Path path);
 
-  ui.Offset? pickEndPosition(Path path);
+  ui.Offset? pickBorderStart(Path path) {
+    return pickPreLastPosition(path);
+  }
+
+  ui.Offset? pickBorderEnd(Path path);
 
   ui.Offset? pickPreLastPosition(Path path) {
     ui.Offset? end;
     for (int i = index - 1; i >= 0; i--) {
-      end = path.operationList[i].pickEndPosition(path);
+      end = path.operationList[i].pickBorderEnd(path);
       if (end != null) {
         break;
       }
@@ -40,10 +43,16 @@ abstract class UnEffectPathOperation extends RawOperation {
   const UnEffectPathOperation(super.index, super.relative);
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) => null;
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) => null;
+
+  @override
+  ui.Offset? pickBorderStart(Path path) => null;
 }
 
 class MoveOperation extends RawOperation {
@@ -62,19 +71,33 @@ class MoveOperation extends RawOperation {
   PathType get type => PathType.move;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) => null;
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
-    if (!relative) {
-      return ui.Offset(x, y);
+  ui.Offset? pickBorderEnd(Path path) {
+    ui.Offset start = ui.Offset(x, y);
+    if (relative) {
+      var pre = pickPreLastPosition(path);
+      if (pre != null) {
+        start += pre;
+      }
     }
-    ui.Offset? end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    return ui.Offset(x, y) + end;
+    return start;
+  }
+
+  @override
+  ui.Offset? pickBorderStart(Path path) {
+    ui.Offset start = ui.Offset(x, y);
+    if (relative) {
+      var pre = pickPreLastPosition(path);
+      if (pre != null) {
+        start += pre;
+      }
+    }
+    return start;
   }
 }
 
@@ -94,7 +117,7 @@ class LineOperation extends RawOperation {
   PathType get type => PathType.line;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -107,7 +130,7 @@ class LineOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (!relative) {
       return ui.Offset(x, y);
     }
@@ -135,7 +158,7 @@ class QuadraticBezierOperation extends RawOperation {
   PathType get type => PathType.quadraticBezier;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -149,7 +172,7 @@ class QuadraticBezierOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (!relative) {
       return ui.Offset(x2, y2);
     }
@@ -180,7 +203,7 @@ class CubicOperation extends RawOperation {
   PathType get type => PathType.cubic;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -195,7 +218,7 @@ class CubicOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (!relative) {
       return ui.Offset(x3, y3);
     }
@@ -225,7 +248,7 @@ class ConicOperation extends RawOperation {
   PathType get type => PathType.conic;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -242,7 +265,7 @@ class ConicOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (!relative) {
       return ui.Offset(x2, y2);
     }
@@ -270,7 +293,7 @@ class ArcToOperation extends RawOperation {
   PathType get type => PathType.arcTo;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -278,7 +301,7 @@ class ArcToOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     var angle = (startAngle + sweepAngle) * pi / 180;
     var center = rect.center;
     return ui.Offset(center.dx + cos(angle) * rect.width, center.dy + sin(angle) * rect.height);
@@ -309,7 +332,7 @@ class ArcToPointOperation extends RawOperation {
   PathType get type => PathType.arcToPoint;
 
   @override
-  bool get effectPathLevel => false;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -323,7 +346,7 @@ class ArcToPointOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (!relative) {
       return arcEnd;
     }
@@ -348,7 +371,7 @@ class RectOperation extends RawOperation {
   PathType get type => PathType.addRect;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -366,7 +389,14 @@ class RectOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderEnd(Path path) {
+    return rect.topLeft;
+  }
+
+  @override
+  ui.Offset? pickBorderStart(Path path) {
+    return rect.topLeft;
+  }
 }
 
 class OvalOperation extends RawOperation {
@@ -384,7 +414,7 @@ class OvalOperation extends RawOperation {
   PathType get type => PathType.addOval;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -392,7 +422,10 @@ class OvalOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) => oval.centerLeft;
+  ui.Offset? pickBorderEnd(Path path) => oval.centerLeft;
+
+  @override
+  ui.Offset? pickBorderStart(Path path) => oval.centerLeft;
 }
 
 class ArcOperation extends RawOperation {
@@ -412,7 +445,7 @@ class ArcOperation extends RawOperation {
   PathType get type => PathType.addArc;
 
   @override
-  bool get effectPathLevel => (sweepAngle.abs() % 360) == 0;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -420,7 +453,20 @@ class ArcOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderStart(Path path) {
+    var center = oval.center;
+    var x = (oval.width / 2) * cos(startAngle);
+    var y = (oval.height / 2) * sin(startAngle);
+    return ui.Offset(center.dx + x, center.dy + y);
+  }
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) {
+    var center = oval.center;
+    var x = (oval.width / 2) * cos(startAngle + sweepAngle);
+    var y = (oval.height / 2) * sin(startAngle + sweepAngle);
+    return ui.Offset(center.dx + x, center.dy + y);
+  }
 }
 
 class PolygonOperation extends RawOperation {
@@ -439,7 +485,7 @@ class PolygonOperation extends RawOperation {
   PathType get type => PathType.addPolygon;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -458,7 +504,12 @@ class PolygonOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderStart(Path path) {
+    return points.firstOrNull;
+  }
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) {
     if (close) {
       return points.firstOrNull;
     }
@@ -481,7 +532,7 @@ class RRectOperation extends RawOperation {
   PathType get type => PathType.addRrect;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -489,8 +540,13 @@ class RRectOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
-    return ui.Offset(rrect.left, rrect.bottom - rrect.blRadiusY);
+  ui.Offset? pickBorderStart(Path path) {
+    return ui.Offset(rrect.left + rrect.tlRadiusX, rrect.top);
+  }
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) {
+    return pickBorderStart(path);
   }
 }
 
@@ -511,7 +567,7 @@ class PathPathOperation extends RawOperation {
   PathType get type => PathType.addPath;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -525,7 +581,10 @@ class PathPathOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) => Path.lastOffset(this.path.rawPath);
+  ui.Offset? pickBorderStart(Path path) => Path.firstOffset(this.path.rawPath);
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) => Path.lastOffset(this.path.rawPath);
 }
 
 class ExtendPathOperation extends RawOperation {
@@ -545,7 +604,7 @@ class ExtendPathOperation extends RawOperation {
   PathType get type => PathType.extendsPath;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => true;
 
   @override
   PathSegment? pickBorder(Path path) {
@@ -559,7 +618,7 @@ class ExtendPathOperation extends RawOperation {
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) {
+  ui.Offset? pickBorderEnd(Path path) {
     if (matrix4 != null) {
       var ma = Matrix4.fromFloat64List(matrix4!);
       ma.translate(offset.dx, offset.dy);
@@ -587,30 +646,88 @@ class ClosePathOperation extends RawOperation {
   PathType get type => PathType.close;
 
   @override
-  bool get effectPathLevel => true;
+  bool get isStandAlonePath => false;
 
   @override
   PathSegment? pickBorder(Path path) {
-    var end = pickPreLastPosition(path);
-    end ??= ui.Offset.zero;
-    ui.Offset first = end;
-    RawOperation? ope;
+    List<RawOperation> list = [];
     for (int i = index - 1; i >= 0; i--) {
-      ope ??= path.operationList[i];
-
-      if (ope.effectPathLevel) {
-        break;
+      var operation = path.operationList[i];
+      if (operation.isStandAlonePath) {
+        if (operation is MoveOperation) {
+          list.add(operation);
+          break;
+        }
+        continue;
       }
+      list.add(operation);
     }
-    var tmp = ope?.pickEndPosition(path);
-    if (tmp != null) {
-      first = tmp;
+    list = list.reversed.toList();
+    var start = list.last.pickBorderEnd(path);
+    if (start == null) {
+      return null;
     }
-    return [Cubic.ofLine(end, first)];
+    var first = list.first;
+    ui.Offset? end;
+    if (first is MoveOperation) {
+      end = first.pickBorderEnd(path);
+    } else {
+      end = first.pickPreLastPosition(path);
+    }
+
+    if (end == null) {
+      return null;
+    }
+    return [Cubic.ofLine(start, end)];
   }
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderStart(Path path) {
+    List<RawOperation> list = [];
+    for (int i = index - 1; i >= 0; i--) {
+      var operation = path.operationList[i];
+      if (operation.isStandAlonePath) {
+        if (operation is MoveOperation) {
+          list.add(operation);
+          break;
+        }
+        continue;
+      }
+      list.add(operation);
+    }
+    var first = list.last;
+    ui.Offset? end;
+    if (first is MoveOperation) {
+      end = first.pickBorderEnd(path);
+    } else {
+      end = first.pickPreLastPosition(path);
+    }
+    return end;
+  }
+
+  @override
+  ui.Offset? pickBorderEnd(Path path) {
+    List<RawOperation> list = [];
+    for (int i = index - 1; i >= 0; i--) {
+      var operation = path.operationList[i];
+      if (operation.isStandAlonePath) {
+        if (operation is MoveOperation) {
+          list.add(operation);
+          break;
+        }
+        continue;
+      }
+      list.add(operation);
+    }
+    var first = list.first;
+    ui.Offset? end;
+    if (first is MoveOperation) {
+      end = first.pickBorderEnd(path);
+    } else {
+      end = first.pickPreLastPosition(path);
+    }
+    return end;
+  }
 }
 
 class ShiftOperation extends UnEffectPathOperation {
@@ -627,7 +744,7 @@ class ShiftOperation extends UnEffectPathOperation {
   PathType get type => PathType.shift;
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderEnd(Path path) => null;
 }
 
 class TransformPathOperation extends UnEffectPathOperation {
@@ -644,7 +761,7 @@ class TransformPathOperation extends UnEffectPathOperation {
   PathType get type => PathType.transform;
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderEnd(Path path) => null;
 }
 
 class PathFillTypeOperation extends UnEffectPathOperation {
@@ -662,7 +779,7 @@ class PathFillTypeOperation extends UnEffectPathOperation {
   PathType get type => PathType.fillType;
 
   @override
-  ui.Offset? pickEndPosition(Path path) => null;
+  ui.Offset? pickBorderEnd(Path path) => null;
 }
 
 enum PathType {
