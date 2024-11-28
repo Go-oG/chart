@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:e_paths/src/cubic.dart';
@@ -72,10 +71,9 @@ class PathMorph {
       }
     }
 
-
-    // List<Cubic> cubicList = matchCurves(startPath.borderList, endPath.borderList);
-    // endPath.borderList.clear();
-    // endPath.borderList.addAll(cubicList);
+    List<Cubic> cubicList = matchCurves(startPath.borderList, endPath.borderList);
+    endPath.borderList.clear();
+    endPath.borderList.addAll(cubicList);
   }
 
   List<Cubic> matchCurves(List<Cubic> pathA, List<Cubic> pathB) {
@@ -105,7 +103,7 @@ class PathMorph {
     final tt = start ? _startList : _endList;
     for (var subPaths in tt) {
       for (var c in subPaths.borderList) {
-        list.add([c.start, c.control1, c.control2, c.end]);
+        list.add([c.start, c.c1, c.c2, c.end]);
       }
     }
     return list;
@@ -174,7 +172,7 @@ final class SubPath {
         resultPath.moveTo(cubic.start.dx, cubic.start.dy);
       }
       resultPath.cubicTo(
-          cubic.control1.dx, cubic.control1.dy, cubic.control2.dx, cubic.control2.dy, cubic.end.dx, cubic.end.dy);
+          cubic.c1.dx, cubic.c1.dy, cubic.c2.dx, cubic.c2.dy, cubic.end.dx, cubic.end.dy);
     }
     if (close) {
       resultPath.close();

@@ -214,7 +214,7 @@ class CubicOperation extends RawOperation {
     final end = relative ? pre.translate(x3, y3) : ui.Offset(x3, y3);
     final control1 = relative ? pre.translate(x1, y1) : ui.Offset(x1, y1);
     final control2 = relative ? pre.translate(x2, y2) : ui.Offset(x2, y2);
-    return [Cubic(pre, end, control1, control2)];
+    return [Cubic(start: pre, end: end, c1: control1, c2: control2)];
   }
 
   @override
@@ -261,7 +261,7 @@ class ConicOperation extends RawOperation {
 
     ui.Offset c1 = pre + (c - pre) * w;
     ui.Offset c2 = end + (c - end) * w;
-    return [Cubic(pre, end, c1, c2)];
+    return [Cubic(start: pre, end: end, c1: c1, c2: c2)];
   }
 
   @override
