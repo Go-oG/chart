@@ -17,15 +17,6 @@ class CRect extends CShape {
         right = center.dx + width / 2,
         bottom = center.dy + height / 2;
 
-  static CRect fromAttr(Attrs attrs) {
-    var center = attrs.getCenter() ?? Offset.zero;
-    var size = attrs.getSize(const Size(0, 0))!;
-    var left = center.dx - size.width / 2;
-    var top = center.dy - size.height / 2;
-
-    return CRect(left: left, top: top, right: left + size.width, bottom: top + size.height);
-  }
-
   @override
   Path buildPath() {
     Path path = Path();
@@ -34,6 +25,7 @@ class CRect extends CShape {
   }
 
   Offset get center => bound.center;
+
   Size get size => bound.size;
 
   @override
@@ -54,33 +46,4 @@ class CRect extends CShape {
 
   @override
   void fill(Attrs attr) {}
-}
-
-CShape? rectShapeBuilder(LayoutResult value, Size size, Attrs attrs) {
-  Corner corner = Corner.fromAttr(attrs);
-  if (value is RectLayoutResult) {
-    return CRect(left: value.left, top: value.top, right: value.right, bottom: value.bottom, corner: corner);
-  }
-  if (value is CircleLayoutResult) {
-    return CRect.fromCenter(
-      center: value.center,
-      width: size.width,
-      height: size.height,
-    );
-  }
-  if (value is OffsetLayoutResult) {
-    return CRect.fromCenter(
-      center: Offset(value.x, value.y),
-      width: size.width,
-      height: size.height,
-    );
-  }
-  if (value is PolarLayoutResult) {
-    return CRect.fromCenter(
-      center: circlePoint(value.radius, value.angle, value.center),
-      width: size.width,
-      height: size.height,
-    );
-  }
-  return null;
 }

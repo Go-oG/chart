@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
 ///数据映射图形描述信息
@@ -80,8 +81,8 @@ mixin GeomMix {
   }
 
   Size pickSize(DataNode node, double ratio) {
-    double? w = node.data.getAttr2(Attr.fixWidth);
-    double? h = node.data.getAttr2(Attr.fixHeight);
+    double? w = node.data.get2(Attr.fixWidth);
+    double? h = node.data.get2(Attr.fixHeight);
     var sizeSpec = this.sizeSpec;
     if (w == null) {
       if (sizeSpec != null) {
@@ -99,15 +100,6 @@ mixin GeomMix {
     }
     return Size(w, h);
   }
-
-  CShape pickShape(DataNode node) {
-    var spec = shapeSpec;
-    if (spec != null) {
-      return spec.call(node);
-    }
-    return shapeFactory.build(node, shapeAttrs, shapeType);
-  }
-
 }
 
 ///负责存储位置映射关系

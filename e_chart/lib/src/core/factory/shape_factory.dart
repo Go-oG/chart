@@ -11,10 +11,7 @@ final class ShapeFactory {
 
   ShapeFactory._() {
     addBuilder(ShapeType.circle, circleShapeBuilder);
-    addBuilder(ShapeType.positive, positiveShapeBuilder);
     addBuilder(ShapeType.prism, prismShapeBuilder);
-    addBuilder(ShapeType.rect, rectShapeBuilder);
-    addBuilder(ShapeType.star, starShapeBuilder);
   }
 
   void addBuilder(ShapeType type, ShapeBuilder builder) {
@@ -23,14 +20,6 @@ final class ShapeFactory {
 
   void removeBuilder(ShapeType type) {
     _builderMap.remove(type);
-  }
-
-  CShape build(DataNode node, Attrs? attrs, ShapeType type) {
-    var builder = _builderMap[type];
-    if (builder == null) {
-      return EmptyShape();
-    }
-    return builder(node.layoutResult, node.size, attrs ?? Attrs.empty)??EmptyShape.none;
   }
 
   static PathShape buildBoxplot(List<double> xList, List<double> yList) {
@@ -228,38 +217,6 @@ final class ShapeFactory {
   }
 
   static PathShape buildCandlestickForPolar(Offset center, List<double> xList, List<double> yList) {
-    // checkArgs(yList.length == 4);
-    // var centerX = (startX + endX) / 2;
-    // var low = circlePoint(yList[0], centerX, center);
-    // var up = circlePoint(yList[1], centerX);
-    //
-    // var open = circlePoint(yList[2], centerX);
-    // var open1 = circlePoint(yList[2], startX);
-    // var open2 = circlePoint(yList[2], endX);
-    //
-    // var close = circlePoint(yList[3], centerX);
-    // var close1 = circlePoint(yList[3], startX);
-    // var close2 = circlePoint(yList[3], endX);
-    //
-    // Path path = Path();
-    // path.moveTo2(low);
-    // path.lineTo2(up);
-    //
-    // Path p2 = Path();
-    // if (close > open) {
-    //   p2.moveTo2(open1);
-    //   p2.lineTo2(close1);
-    //   p2.lineTo2(close2);
-    //   p2.lineTo2(open2);
-    //   p2.close();
-    // } else {
-    //   p2.moveTo2(close1);
-    //   p2.lineTo2(open1);
-    //   p2.lineTo2(open2);
-    //   p2.lineTo2(close2);
-    //   p2.close();
-    // }
-    // path.addPath(p2, Offset.zero);
     return PathShape(Path());
   }
 }

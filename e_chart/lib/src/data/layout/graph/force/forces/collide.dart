@@ -1,9 +1,6 @@
 import 'dart:math';
+
 import 'package:e_chart/e_chart.dart';
-import '../force.dart';
-import '../simulation.dart';
-import '../ffun.dart';
-import '../jiggle.dart';
 
 ///碰撞力节点用于避免节点重叠。
 ///碰撞力将节点视为具有给定半径的圆，使得节点a 和 b 之间的距离至少为 radius(a) + radius(b)。
@@ -80,7 +77,7 @@ class CollideForce extends GForce {
         /// hierarchy.visit
         tree.each((quad, x0, y0, x1, y1) {
           var data = quad.data;
-          num rj = quad.getAttr('r') ?? 0;
+          num rj = quad.r;
           num r = ri + rj;
           if (data != null) {
             if (data.index > node.index) {
@@ -112,14 +109,14 @@ class CollideForce extends GForce {
   bool _prepare(QuadNode<GraphNode> quad, num x0, num y0, num x1, num y1) {
     if (quad.data != null) {
       num r = _radiusMap[quad.data]!;
-      quad.putAttr('r', r);
+      quad.r = r;
       return r != 0;
     }
-    quad.putAttr('r', 0);
+    quad.r = 0;
     for (int i = 0; i < 4; ++i) {
       var node = quad[i];
-      if (node != null && node.getAttr('r') > quad.getAttr('r')) {
-        quad.putAttr('r', node.getAttr('r'));
+      if (node != null && node.r > quad.r) {
+        quad.r = node.r;
       }
     }
     return false;

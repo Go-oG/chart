@@ -58,7 +58,6 @@ abstract class DataTransform extends Disposable {
 
   ///在创建刻度之后被调用
   void onAfterBuildScale(Context context, Geom geom, List<DataNode> nodeList) {}
-
 }
 
 abstract class BaseDataTransform extends DataTransform {
@@ -200,13 +199,12 @@ class HierarchyLayout extends Disposable {
   void onLayout(Context context, TreeNode data, covariant HierarchyOption option) {}
 }
 
-class HierarchyOption with ExtProps {
+class HierarchyOption with AttrMixin {
   final Rect rect;
-  final Offset center;
 
-  HierarchyOption(this.rect, [this.center = Offset.zero]);
-
-  double get width => rect.width;
-
-  double get height => rect.height;
+  HierarchyOption(this.rect, [Offset center = Offset.zero]) {
+    this.center = center;
+    width = rect.width;
+    height = rect.height;
+  }
 }

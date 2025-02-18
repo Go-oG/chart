@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'dart:math' as m;
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
@@ -18,27 +18,6 @@ class Arc extends CShape {
   double cornerRadius;
   double padAngle;
   late double maxRadius;
-
-  static Arc fromAttr(Attrs attr) {
-    Offset center = attr.getCenter(Offset.zero)!;
-    num ir = attr[Attr.innerRadius] ?? 0;
-    num or = attr.getNum([Attr.outRadius], ir);
-    num startAngle = attr[Attr.startAngle] ?? 0;
-    num sweepAngle = attr[Attr.sweepAngle] ?? 0;
-    num corner = attr[Attr.corner] ?? 0;
-    num pad = attr.getNum([Attr.pad], 0);
-    num maxRadius = attr[Attr.maxRadius] ?? or;
-
-    return Arc(
-        innerRadius: ir.toDouble(),
-        outRadius: or.toDouble(),
-        startAngle: startAngle.toDouble(),
-        sweepAngle: sweepAngle.toDouble(),
-        cornerRadius: corner.toDouble(),
-        padAngle: pad.toDouble(),
-        center: center,
-        maxRadius: maxRadius.toDouble());
-  }
 
   Arc({
     this.innerRadius = 0,
@@ -134,8 +113,7 @@ class Arc extends CShape {
     Path path = Path();
     Offset op = circlePoint(r, startAngle, center);
     path.moveTo(op.dx, op.dy);
-    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * angleUnit,
-        sweepAngle * angleUnit, false);
+    path.arcTo(Rect.fromCircle(center: center, radius: r), startAngle * angleUnit, sweepAngle * angleUnit, false);
     return path;
   }
 

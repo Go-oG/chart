@@ -8,14 +8,14 @@ class AreaView extends PathView<AreaGeom> {
 
   @override
   Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
-    var map = node.pickXY();
-    map[Attr.scale] = type == DiffType.add ? 0 : 1;
-    return map;
+    var attr = {Attr.x: node.x, Attr.y: node.y};
+    attr[Attr.scale] = type == DiffType.add ? 0 : 1;
+    return attr;
   }
 
   @override
   Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
-    var attr = node.pickXY();
+    var attr = {Attr.x: node.x, Attr.y: node.y};
     attr[Attr.scale] = type == DiffType.remove ? 0 : 1;
     return attr;
   }
@@ -41,5 +41,4 @@ class AreaView extends PathView<AreaGeom> {
     });
     combineShapeList = shapeList;
   }
-
 }

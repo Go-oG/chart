@@ -41,8 +41,8 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList) {
     var coordView = findCoordView()!;
-    for(var node in nodeList){
-      node.size=layoutSingleNodeSize(coordView, node);
+    for (var node in nodeList) {
+      node.size = layoutSingleNodeSize(coordView, node);
     }
     super.onLayoutNodeEnd(nodeList);
   }
@@ -54,9 +54,6 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
 
     var xScale = context.dataManager.getAxisScale(geom.coordId, node.xAxisDim);
     var yScale = context.dataManager.getAxisScale(geom.coordId, node.yAxisDim);
-    if (xScale == null || yScale == null) {
-      return Size.zero;
-    }
 
     var xRatio = xScale.normalize(node.getRawData(Dim.x));
     var yRatio = yScale.normalize(node.getRawData(Dim.y));
@@ -69,16 +66,15 @@ class PointView<T extends PointGeom> extends BasePointView<T> {
 
   @override
   Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
-    var attr = node.pickXY();
+    var attr = {Attr.x: node.x, Attr.y: node.y};
     attr[Attr.scale] = type == DiffType.add ? 0 : 1;
     return attr;
   }
 
   @override
   Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
-    var attr = node.pickXY();
+    var attr = {Attr.x: node.x, Attr.y: node.y};
     attr[Attr.scale] = type == DiffType.remove ? 0 : 1;
     return attr;
   }
-
 }

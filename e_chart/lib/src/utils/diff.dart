@@ -189,35 +189,6 @@ class DiffUtil {
     return nl;
   }
 
-  static Future<List<AnimationNode>> diff2<D extends DataNode>(
-    LerpBuilder lerp,
-    Iterable<D> oldList,
-    Iterable<D> newList,
-    FutureOr<void> Function(List<D> dataList) layoutFun,
-    void Function(List<D> dataList, double t) updateCall, {
-    VoidCallback? onStart,
-    VoidCallback? onEnd,
-    void Function(List<D> removeList)? removeDataCall,
-    void Function(DiffResult<D> diffInfo)? diffInfoCall,
-    bool forceUseUpdate = false,
-  }) async {
-    return diff(
-      lerp.option,
-      oldList,
-      newList,
-      layoutFun,
-      lerp.onStart,
-      lerp.onEnd,
-      lerp.onLerp,
-      updateCall,
-      onStart: onStart,
-      onEnd: onEnd,
-      removeDataCall: removeDataCall,
-      diffInfoCall: diffInfoCall,
-      forceUseUpdate: forceUseUpdate,
-    );
-  }
-
   ///用于在点击或者hover触发时执行diff动画
   static List<AnimationNode> diffUpdate<N extends DataNode>(
     AnimateOption? attrs,

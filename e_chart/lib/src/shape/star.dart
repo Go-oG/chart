@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
@@ -105,57 +106,4 @@ class Star extends CShape {
     num angleOffset = lerpDouble(s.angleOffset, e.angleOffset, t)!;
     return Star(center, count, ir, or, angleOffset: angleOffset, inside: e.inside);
   }
-}
-
-CShape? starShapeBuilder(LayoutResult value,Size size, Attrs attrs) {
-  var count = attrs.getInt([Attr.count], 5);
-  var or = attrs.getDouble([Attr.outRadius], size.shortestSide / 2);
-  var ir = attrs.getDouble([Attr.innerRadius], 0);
-  var off = attrs.getDouble([Attr.offset]);
-  var inside = attrs.getObject([Attr.inside]);
-  if (inside is! bool) {
-    inside = false;
-  }
-
-  if (value is RectLayoutResult) {
-    return Star(
-      Offset(value.centerX, value.centerY),
-      count,
-      ir,
-      or,
-      inside: inside,
-      angleOffset: off,
-    );
-  }
-  if (value is CircleLayoutResult) {
-    return Star(
-      value.center,
-      count,
-      ir,
-      or,
-      inside: inside,
-      angleOffset: off,
-    );
-  }
-  if (value is OffsetLayoutResult) {
-    return Star(
-      Offset(value.x, value.y),
-      count,
-      ir,
-      or,
-      inside: inside,
-      angleOffset: off,
-    );
-  }
-  if (value is PolarLayoutResult) {
-    return Star(
-      circlePoint(value.radius, value.angle, value.center),
-      count,
-      ir,
-      or,
-      inside: inside,
-      angleOffset: off,
-    );
-  }
-  return null;
 }

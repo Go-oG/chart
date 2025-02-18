@@ -4,7 +4,7 @@ import '../model/error.dart';
 import '../model/range_info.dart';
 import '../types.dart';
 import '../utils/math_util.dart';
-import 'data.dart';
+import 'data_node.dart';
 
 final class DataNodeSet {
   Map<String, DataNode> _nodeSet = {};
@@ -94,7 +94,6 @@ final class DataNodeSet {
   }
 }
 
-
 ///用于优化解决大数据量下数据的获取
 ///支持按时间维度、字符串维度、数字维度来进行数据的管理
 class DataStore<T> {
@@ -104,7 +103,7 @@ class DataStore<T> {
 
   dynamic Function(T data) get accessor => _accessor!;
 
-  DataStore(this._accessor) ;
+  DataStore(this._accessor);
 
   Map<String, List<T>> _strMap = {};
   Map<int, List<T>> _timeMap = {};
@@ -112,7 +111,6 @@ class DataStore<T> {
 
   ///存储数字基数
   late final double _numBase;
-
 
   void parse(List<T?> list) {
     _strMap = {};
@@ -235,7 +233,6 @@ class DataStore<T> {
 
     return resultList;
   }
-
 
   void dispose() {
     _accessor = null;

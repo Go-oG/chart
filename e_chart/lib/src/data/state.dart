@@ -7,7 +7,7 @@ enum NodeState {
   focused,
   activated,
   pressed,
-  dragged,
+  dragged;
 }
 
 enum ViewVisibility {
@@ -119,7 +119,6 @@ mixin StateMix {
 
   Set<NodeState> get status => _stateSet;
 }
-
 
 abstract class StateResolver<T> {
   T? resolve(Set<NodeState>? states);

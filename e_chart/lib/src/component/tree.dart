@@ -6,7 +6,7 @@ import 'package:e_chart/e_chart.dart';
 ///当返回true 表示要终止遍历
 typedef TreeEachFun = bool Function(TreeNode node, int index, TreeNode startNode);
 
-class TreeNode extends DataNode with ExtProps {
+class TreeNode extends DataNode {
   TreeNode? parent;
   List<TreeNode> _childrenList = [];
 

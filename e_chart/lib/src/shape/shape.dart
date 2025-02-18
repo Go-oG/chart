@@ -74,7 +74,7 @@ abstract class CShape extends Disposable {
   }
 
   void lerp(Attrs s, Attrs e, double t) {
-    fill(s.lerp(e, t));
+    //   fill(s.lerp(e, t));
   }
 
   void fill(Attrs attr);

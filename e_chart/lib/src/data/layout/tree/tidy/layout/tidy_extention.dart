@@ -75,7 +75,7 @@ extension TidyTreeExt on TreeNode {
   }
 
   set tidy(TidyData? v) {
-    putAttr("tidyData", v);
+    setAttr("tidyData", v);
   }
 
   TidyData? get tidyNull {
@@ -83,7 +83,7 @@ extension TidyTreeExt on TreeNode {
   }
 
   set bbox(BoundingBox? v) {
-    putAttr("bbox", v);
+    setAttr("bbox", v);
   }
 
   BoundingBox get bbox {
@@ -113,11 +113,11 @@ extension TidyTreeExt on TreeNode {
 
   double get relativeX => (getAttr("relativeX", 0) as num).toDouble();
 
-  set relativeX(double v) => putAttr("relativeX", v);
+  set relativeX(double v) => setAttr("relativeX", v);
 
   double get relativeY => (getAttr("relativeY", 0) as num).toDouble();
 
-  set relativeY(double v) => putAttr("relativeY", v);
+  set relativeY(double v) => setAttr("relativeY", v);
 
   void positionRoot() {
     var first = children.first;

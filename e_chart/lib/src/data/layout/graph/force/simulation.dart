@@ -1,8 +1,7 @@
 import 'dart:math';
 
-import 'package:flutter/widgets.dart';
 import 'package:e_chart/e_chart.dart';
-import 'force.dart';
+import 'package:flutter/widgets.dart';
 
 class GForceSimulation extends ViewNotifier {
   static const int optMaxCount = 25;
@@ -122,18 +121,21 @@ class GForceSimulation extends ViewNotifier {
         if (k == 0 && optPerformance && !byUser) {
           oldPxMap[node] = [node.x, node.y, node.vx, node.vy];
         }
-        if (node.fx == null) {
+        double? fx = node.data.get2(Attr.fx);
+        double? fy = node.data.get2(Attr.fy);
+        if (fx == null) {
           node.vx *= _velocityDecay;
           node.x += node.vx;
         } else {
-          node.x = node.fx!;
+          node.x = fx;
           node.vx = 0;
         }
-        if (node.fy == null) {
+
+        if (fy == null) {
           node.vy *= _velocityDecay;
           node.y += node.vy;
         } else {
-          node.y = node.fy!;
+          node.y = fy;
           node.vy = 0;
         }
       }
@@ -316,11 +318,14 @@ class GForceSimulation extends ViewNotifier {
   void _initializeNodes() {
     each(_graph.nodes, (node, i) {
       node.index = i;
-      if (node.fx != null) {
-        node.x = node.fx!;
+      double? fx = node.data.get2(Attr.fx);
+      double? fy = node.data.get2(Attr.fy);
+
+      if (fx != null) {
+        node.x = fx;
       }
-      if (node.fy != null) {
-        node.y = node.fy!;
+      if (fy != null) {
+        node.y = fy;
       }
       if (node.x.isNaN || node.y.isNaN) {
         var radius = _initialRadius * sqrt(0.5 + i), angle = i * _initialAngle;

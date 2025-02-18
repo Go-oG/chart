@@ -2,7 +2,7 @@ import 'package:e_chart/e_chart.dart';
 
 ///表示为系列数据
 ///该对象仅用于辅助布局
-class GroupNode with ExtProps {
+class GroupNode with AttrMixin {
   final String category;
   Map<String, ColumnNode> columns = {};
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 ///标记抽象表示
 ///每个图表必须要有一个Geom
-abstract class Geom extends ViewNotifier with GeomMix,TransformMix {
+abstract class Geom extends ViewNotifier with GeomMix, TransformMix {
   late final String id;
   late String coordId;
   List<RawData> dataSet;
@@ -65,9 +65,8 @@ abstract class Geom extends ViewNotifier with GeomMix,TransformMix {
     return DataNode(this, data, value: value);
   }
 
-
   List<DataNode> nodeList(Context context) {
-   return context.dataManager.getNodesByGeom(coordId, geomType);
+    return context.dataManager.getNodesByGeom(coordId, geomType);
   }
 
   ///尝试获取单一Value值

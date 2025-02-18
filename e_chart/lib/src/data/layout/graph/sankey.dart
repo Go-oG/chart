@@ -102,8 +102,9 @@ class SankeyTransform extends EdgeTransform {
   ///计算节点数值(统计流入和流出取最大值)
   void _computeNodeValues(List<GraphNode> nodes) {
     for (var node in nodes) {
-      if (node.fixValue != null) {
-        node.value = node.fixValue!;
+      dynamic fixValue = node.data.get2(Attr.fixValue);
+      if (fixValue != null && fixValue is num) {
+        node.value = fixValue.toDouble();
         continue;
       }
       num sv = sumBy(node.inputLinks, (p0) => p0.value);
@@ -427,7 +428,7 @@ extension _SankeyExt on GraphNode {
   }
 
   set layer(int l) {
-    putAttr("sankey_layer", l);
+    setAttr("sankey_layer", l);
   }
 }
 

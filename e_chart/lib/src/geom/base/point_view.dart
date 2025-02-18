@@ -16,9 +16,9 @@ abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
 
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList) {
-    for (var node in nodeList) {
-      node.shape = geom.pickShape(node);
-    }
+    // for (var node in nodeList) {
+    //   node.shape = geom.pickShape(node);
+    // }
   }
 
   LayoutResult layoutSingleNode(CoordView coord, DataNode node);
@@ -58,6 +58,4 @@ abstract class BasePointView<T extends Geom> extends AnimateGeomView<T> {
     //   t.start(context, true);
     // }
   }
-
 }
-

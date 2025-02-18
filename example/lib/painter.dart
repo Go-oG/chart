@@ -23,50 +23,50 @@ class MyPainter extends mat.CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _initIfNeed(size);
-    mPaint.style = PaintingStyle.stroke;
-    mPaint.color = mat.Colors.black87;
-    mPaint.strokeWidth = 2;
-    var rect = Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width: size.width, height: size.height);
-    canvas.drawLine(rect.centerLeft, rect.centerRight, mPaint);
-    canvas.drawLine(rect.topCenter, rect.bottomCenter, mPaint);
-
-    mPaint.color = mat.Colors.blueAccent;
-    canvas.drawPath(p1.rawPath, mPaint);
+    // mPaint.style = PaintingStyle.stroke;
+    // mPaint.color = mat.Colors.black87;
+    // mPaint.strokeWidth = 2;
+    // var rect = Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width: size.width, height: size.height);
+    // canvas.drawLine(rect.centerLeft, rect.centerRight, mPaint);
+    // canvas.drawLine(rect.topCenter, rect.bottomCenter, mPaint);
+    //
+    // mPaint.color = mat.Colors.blueAccent;
+    // canvas.drawPath(p1.rawPath, mPaint);
 
     // mPaint.color = mat.Colors.deepPurple;
     // canvas.drawPath(p2.rawPath, mPaint);
 
     //  mPaint.style = PaintingStyle.stroke;
 
-    for (var item in p1.pickSegment()) {
-      for (var tt in item) {
-        for (var cubic in tt) {
-          ui.Path tmpPath = ui.Path();
-          tmpPath.moveTo(cubic.start.dx, cubic.start.dy);
-          tmpPath.cubicTo(
-            cubic.c1.dx,
-            cubic.c1.dy,
-            cubic.c2.dx,
-            cubic.c2.dy,
-            cubic.end.dx,
-            cubic.end.dy,
-          );
-          canvas.drawPath(tmpPath, mPaint);
-          canvas.drawCircle(cubic.start, 6, mPaint);
-          canvas.drawCircle(cubic.c1, 6, mPaint);
-          canvas.drawCircle(cubic.c2, 6, mPaint);
-          canvas.drawCircle(cubic.end, 6, mPaint);
-        }
-      }
-    }
-
-    for (var item in morph.getControlPoints(true)) {
-      mPaint.color = randomColor();
-      for (var cc in item) {
-        canvas.drawCircle(cc, 6, mPaint);
-      }
-      break;
-    }
+    // for (var item in p1.pickSegment()) {
+    //   for (var tt in item) {
+    //     for (var cubic in tt) {
+    //       ui.Path tmpPath = ui.Path();
+    //       tmpPath.moveTo(cubic.start.dx, cubic.start.dy);
+    //       tmpPath.cubicTo(
+    //         cubic.c1.dx,
+    //         cubic.c1.dy,
+    //         cubic.c2.dx,
+    //         cubic.c2.dy,
+    //         cubic.end.dx,
+    //         cubic.end.dy,
+    //       );
+    //       canvas.drawPath(tmpPath, mPaint);
+    //       canvas.drawCircle(cubic.start, 6, mPaint);
+    //       canvas.drawCircle(cubic.c1, 6, mPaint);
+    //       canvas.drawCircle(cubic.c2, 6, mPaint);
+    //       canvas.drawCircle(cubic.end, 6, mPaint);
+    //     }
+    //   }
+    // }
+    //
+    // for (var item in morph.getControlPoints(true)) {
+    //   mPaint.color = randomColor();
+    //   for (var cc in item) {
+    //     canvas.drawCircle(cc, 6, mPaint);
+    //   }
+    //   break;
+    // }
 
     // mPaint.color = mat.Colors.red;
     // for (var item in morph.getControlPoints(false)) {
@@ -76,7 +76,8 @@ class MyPainter extends mat.CustomPainter {
     // }
     // mPaint.style = PaintingStyle.stroke;
     //
-    canvas.drawPath(morph.lerp(controller.value, true), mPaint);
+ //   canvas.drawPath(morph.lerp(controller.value, true), mPaint);
+    drawArc(canvas);
   }
 
   void _initIfNeed(Size size) {
@@ -85,7 +86,7 @@ class MyPainter extends mat.CustomPainter {
     }
     _init = true;
     double s = 150;
-    var rect = Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width:s*2, height: s);
+    var rect = Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width: s * 2, height: s);
 
     p1.reset();
     p1.addOval(rect);
@@ -139,6 +140,13 @@ class MyPainter extends mat.CustomPainter {
     canvas.restore();
   }
 
+  void drawArc(Canvas canvas) {
+    Path p1 = ArcPath(startAngle: 0, sweepAngle: 30, center: Offset(100, 100), innerRadius: 50, outerRadius: 100)
+        .createPath();
+
+    canvas.drawPath(p1.rawPath, mPaint);
+  }
+
   @override
   bool shouldRepaint(covariant mat.CustomPainter oldDelegate) => true;
 
@@ -148,3 +156,104 @@ class MyPainter extends mat.CustomPainter {
     return Color.fromARGB(255, _random.nextInt(200), _random.nextInt(230), _random.nextInt(80));
   }
 }
+
+class ArcPath {
+  final double startAngle;   // 起始角度
+  final double sweepAngle;   // 扫过角度
+  final Offset center;       // 圆心坐标
+  final double innerRadius;  // 内半径
+  final double outerRadius;  // 外半径
+  final double arcPad;       // 弧形之间的间隔（角度）
+  final double cornerRadius; // 圆角半径
+
+  ArcPath({
+    required this.startAngle,
+    required this.sweepAngle,
+    required this.center,
+    required this.innerRadius,
+    required this.outerRadius,
+    this.arcPad = 0.0,       // 默认为0，没有间隔
+    this.cornerRadius = 0.0, // 默认为0，没有圆角
+  });
+
+  Path createPath() {
+    final Path path = Path();
+
+    // 调整 startAngle 和 sweepAngle 以添加 arcPad 间隔
+    final double adjustedStartAngle = startAngle + arcPad / 2;
+    final double adjustedSweepAngle = sweepAngle - arcPad;
+
+    // 将角度转换为弧度
+    final double startRadians = adjustedStartAngle * pi / 180;
+    final double endRadians = (adjustedStartAngle + adjustedSweepAngle) * pi / 180;
+
+    // 计算外弧的起点和终点
+    final Offset outerStartPoint = Offset(
+      center.dx + outerRadius * cos(startRadians),
+      center.dy + outerRadius * sin(startRadians),
+    );
+    final Offset outerEndPoint = Offset(
+      center.dx + outerRadius * cos(endRadians),
+      center.dy + outerRadius * sin(endRadians),
+    );
+
+    // 计算内弧的起点和终点
+    final Offset innerStartPoint = Offset(
+      center.dx + innerRadius * cos(endRadians),
+      center.dy + innerRadius * sin(endRadians),
+    );
+    final Offset innerEndPoint = Offset(
+      center.dx + innerRadius * cos(startRadians),
+      center.dy + innerRadius * sin(startRadians),
+    );
+
+    // 从外弧起点开始
+    path.moveTo(outerStartPoint.dx, outerStartPoint.dy);
+
+    // 绘制外圆弧
+    path.arcTo(
+      Rect.fromCircle(center: center, radius: outerRadius),
+      startRadians,
+      endRadians - startRadians,
+      false,
+    );
+
+    // 可选：处理圆角连接
+    if (cornerRadius > 0) {
+      path.arcToPoint(
+        innerStartPoint,
+        radius: Radius.circular(cornerRadius),
+        clockwise: false,
+      );
+    } else {
+      // 如果没有圆角，直接连接到内弧的起点
+      path.lineTo(innerStartPoint.dx, innerStartPoint.dy);
+    }
+
+    // 绘制内圆弧
+    path.arcTo(
+      Rect.fromCircle(center: center, radius: innerRadius),
+      endRadians,
+      startRadians - endRadians,
+      false,
+    );
+
+    // 如果有圆角，处理内外弧的连接
+    if (cornerRadius > 0) {
+      path.arcToPoint(
+        outerEndPoint,
+        radius: Radius.circular(cornerRadius),
+        clockwise: false,
+      );
+    } else {
+      // 如果没有圆角，直接连接到外弧的终点
+      path.lineTo(outerEndPoint.dx, outerEndPoint.dy);
+    }
+
+    // 闭合路径
+    path.close();
+
+    return path;
+  }
+}
+

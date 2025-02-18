@@ -1,15 +1,15 @@
 import 'package:e_chart/e_chart.dart';
 import 'package:flutter/painting.dart';
 
-class ChartAlign {
-  static const center = ChartAlign();
-  static const centerLeft = ChartAlign(align: Alignment.centerLeft, inside: false);
-  static const centerRight = ChartAlign(align: Alignment.centerRight, inside: false);
+class RectAlign {
+  static const center = RectAlign();
+  static const centerLeft = RectAlign(align: Alignment.centerLeft, inside: false);
+  static const centerRight = RectAlign(align: Alignment.centerRight, inside: false);
 
   final Alignment align;
   final bool inside;
 
-  const ChartAlign({this.align = Alignment.center, this.inside = true});
+  const RectAlign({this.align = Alignment.center, this.inside = true});
 
   void fill(Text2 textDraw, Rect rect, LabelStyle style, Direction direction) {
     double x = rect.center.dx + align.x * rect.width / 2;

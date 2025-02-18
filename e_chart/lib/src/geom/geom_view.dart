@@ -237,8 +237,7 @@ final class CombineShape {
   final CShape shape;
   final List<DataNode> nodeList;
 
-  const CombineShape(this.style,this.shape, this.nodeList);
-
+  const CombineShape(this.style, this.shape, this.nodeList);
 }
 
 ///拥有动画效果通用GeomView
@@ -280,7 +279,7 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     //保存完整的布局节点
     setNodeSet(newList);
 
-    var an =await DiffUtil.diff(
+    var an = await DiffUtil.diff(
       getAnimateOption(LayoutType.layout, oldList.length + newLayoutList.length),
       oldList,
       newLayoutList,
@@ -349,7 +348,7 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
 
   ///更新节点动画属性
   void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {
-    node.fillFromAttr(s.lerp(e, t));
+    // node.fillFromAttr(s.lerp(e, t));
   }
 
   /// 当一次动画帧更新时所有节点都已更新后回调
@@ -366,7 +365,6 @@ abstract class AnimateGeomView<T extends Geom> extends GeomView<T> {
     showNodeSet.setAll(newList);
   }
 }
-
 
 enum UpdateReason {
   drag,

@@ -17,7 +17,7 @@ dependencies:
   scidart: ^0.0.2-dev.12
   collection: ^1.19.0
   #统计相关的
-  statistics: ^1.1.2
+  statistics: ^1.1.3
 
 dependency_overrides:
   #stack_trace: ^1.11.1

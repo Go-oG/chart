@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:e_chart/e_chart.dart';
-import 'package:e_chart/src/ext/number_ext.dart';
 
 class BBox {
   num left;
@@ -63,43 +62,6 @@ class Corner {
     );
   }
 
-  static Corner fromAttr(Attrs attrs) {
-    dynamic corner = attrs[Attr.corner];
-    if (corner is Corner) {
-      return corner;
-    }
-    if (corner is List<num>) {
-      if (corner.length >= 4) {
-        double v1 = corner[0].toDouble();
-        double v2 = corner[1].toDouble();
-        double v3 = corner[2].toDouble();
-        double v4 = corner[3].toDouble();
-        return Corner(v1, v2, v3, v4);
-      }
-      if (corner.length >= 3) {
-        double v1 = corner.first.toDouble();
-        double v2 = corner[1].toDouble();
-        double v3 = corner.last.toDouble();
-        return Corner(v1, v1, v2, v3);
-      }
-      if (corner.length >= 2) {
-        double v1 = corner.first.toDouble();
-        double v2 = corner.last.toDouble();
-        return Corner(v1, v1, v2, v2);
-      }
-      if (corner.isNotEmpty) {
-        double v1 = corner.first.toDouble();
-        return Corner(v1, v1, v1, v1);
-      }
-      return Corner.zero;
-    }
-    double leftTop = attrs.getDouble([Attr.leftTopCorner]);
-    double rightTop = attrs.getDouble([Attr.rightTopCorner]);
-    double leftBottom = attrs.getDouble([Attr.leftBottomCorner]);
-    double rightBottom = attrs.getDouble([Attr.rightBottomCorner]);
-    return Corner(leftTop, rightTop, leftBottom, rightBottom);
-  }
-
   @override
   int get hashCode {
     return Object.hash(leftTop, rightTop, leftBottom, rightBottom);
@@ -147,19 +109,4 @@ class Offset2 {
   String toString() {
     return 'C[${x.toStringAsFixed(0)},${y.toStringAsFixed(0)}]';
   }
-}
-
-class EdgeInset2 {
-  double left = 0;
-  double top = 0;
-  double right = 0;
-  double bottom = 0;
-
-  void reset() {
-    left = top = right = bottom = 0;
-  }
-
-  double get vertical => top + bottom;
-
-  double get horizontal => left + right;
 }

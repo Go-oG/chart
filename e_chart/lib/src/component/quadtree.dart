@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
+
 import 'package:e_chart/e_chart.dart';
 
 ///四叉树
@@ -609,9 +610,10 @@ typedef OffsetFun<T> = double Function(T data);
 
 /// 叶子节点和 父节点 的统一封装
 ///节点的属性在创建时就已经被确定了
-class QuadNode<T> with ExtProps {
+class QuadNode<T> with AttrMixin {
   ///作为left节点时使用的属性
   final T? data;
+
   // 下一个节点(存在相同的点)
   QuadNode<T>? next;
 

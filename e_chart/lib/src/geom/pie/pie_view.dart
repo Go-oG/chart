@@ -6,6 +6,7 @@ import 'package:e_chart/e_chart.dart';
 /// 饼图
 class PieView extends BasePointView<PieGeom> {
   PieView(super.context, super.series);
+
   double maxData = double.minPositive;
   double minData = double.maxFinite;
   double allData = 0;
@@ -64,43 +65,45 @@ class PieView extends BasePointView<PieGeom> {
 
   @override
   void onLayoutNodeEnd(List<DataNode> nodeList) {
-    for (var node in nodeList) {
-      node.shape = node.buildArcShape();
-    }
+    // for (var node in nodeList) {
+    //   node.shape = node.buildArcShape();
+    // }
   }
 
   @override
   Attrs onBuildAnimateStarAttrs(DataNode node, DiffType type) {
-    var style = geom.animatorStyle;
-    var attr = node.pickArc();
-    if (type == DiffType.remove || type == DiffType.update) {
-      return attr;
-    }
-    var copy = attr.copy();
-    if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
-      copy[Attr.outRadius] = copy[Attr.innerRadius]!;
-    }
-    if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
-      copy[Attr.startAngle] = geom.offsetAngle;
-    }
-    copy[Attr.sweepAngle] = 0;
-    return copy;
+    // var style = geom.animatorStyle;
+    // var attr = node.pickArc();
+    // if (type == DiffType.remove || type == DiffType.update) {
+    //   return attr;
+    // }
+    // var copy = attr.copy();
+    // if (style == PieAnimatorStyle.expandScale || style == PieAnimatorStyle.originExpandScale) {
+    //   copy[Attr.outRadius] = copy[Attr.innerRadius]!;
+    // }
+    // if (style == PieAnimatorStyle.expand || style == PieAnimatorStyle.expandScale) {
+    //   copy[Attr.startAngle] = geom.offsetAngle;
+    // }
+    // copy[Attr.sweepAngle] = 0;
+    // return copy;
+    return {};
   }
 
   @override
   Attrs onBuildAnimateEndAttrs(DataNode node, DiffType type) {
-    var attr = node.pickArc();
-    if (type == DiffType.add || type == DiffType.update) {
-      return attr;
-    }
-    attr[Attr.sweepAngle] = 0;
-    return attr;
+    // var attr = node.pickArc();
+    // if (type == DiffType.add || type == DiffType.update) {
+    //   return attr;
+    // }
+    // attr[Attr.sweepAngle] = 0;
+    // return attr;
+    return {};
   }
 
   @override
   void onAnimateLerpUpdate(DataNode node, Attrs s, Attrs e, double t, DiffType type) {
-    node.fillFromAttr(s.lerp(e, t));
-    node.shape = node.buildArcShape();
+    // node.fillFromAttr(s.lerp(e, t));
+    // node.shape = node.buildArcShape();
   }
 
   //普通饼图
@@ -244,42 +247,42 @@ class PieView extends BasePointView<PieGeom> {
 
   @override
   void onClickAfter(DataNode? now, DataNode? old) {
-    List<DataNode> oldList = [];
-    if (old != null) {
-      oldList.add(old);
-    }
-    List<DataNode> newList = [];
-    if (now != null) {
-      newList.add(now);
-    }
-
-    const double rDiff = 8;
-    DiffUtil.diffUpdate<DataNode>(
-            getAnimateOption(LayoutType.update),
-            oldList,
-            newList,
-            (node, isOld) {
-              num? originR = node.extra1;
-              if (originR == null) {
-                originR = node.outRadius;
-                node.extra1 = originR;
-              }
-              var attr = node.pickArc();
-              if (isOld) {
-                attr[Attr.outRadius] = originR.toDouble();
-                return attr;
-              }
-              attr[Attr.outRadius] = originR + rDiff;
-              return attr;
-            },
-            (s, e, t) => s.lerp(e, t),
-            (node, map) {
-              node.fillFromAttr(map);
-              repaint();
-            },
-            () {})
-        .first
-        .start(context);
+    // List<DataNode> oldList = [];
+    // if (old != null) {
+    //   oldList.add(old);
+    // }
+    // List<DataNode> newList = [];
+    // if (now != null) {
+    //   newList.add(now);
+    // }
+    //
+    // const double rDiff = 8;
+    // DiffUtil.diffUpdate<DataNode>(
+    //         getAnimateOption(LayoutType.update),
+    //         oldList,
+    //         newList,
+    //         (node, isOld) {
+    //           num? originR = node.extra1;
+    //           if (originR == null) {
+    //             originR = node.outRadius;
+    //             node.extra1 = originR;
+    //           }
+    //           var attr = node.pickArc();
+    //           if (isOld) {
+    //             attr[Attr.outRadius] = originR.toDouble();
+    //             return attr;
+    //           }
+    //           attr[Attr.outRadius] = originR + rDiff;
+    //           return attr;
+    //         },
+    //         (s, e, t) => s.lerp(e, t),
+    //         (node, map) {
+    //           node.fillFromAttr(map);
+    //           repaint();
+    //         },
+    //         () {})
+    //     .first
+    //     .start(context);
   }
 
   @override

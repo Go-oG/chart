@@ -1,9 +1,6 @@
 import 'dart:math';
 
 import 'package:e_chart/e_chart.dart';
-import '../force.dart';
-import '../ffun.dart';
-import '../jiggle.dart';
 
 ///多体力在所有节点之间相互作用(可模拟全局斥力或者重力)
 ///如果强度是正的，它可以用来模拟重力（吸引力），
@@ -73,31 +70,31 @@ class ManyBodyForce extends GForce {
       num y = 0;
       num c;
       for (int i = 0; i < 4; ++i) {
-        if (jsTrue(q = quad[i]) && jsTrue((c = q!.getAttr('value').abs()))) {
-          strength += q.getAttr('value');
+        if (jsTrue(q = quad[i]) && jsTrue((c = q!.value.abs()))) {
+          strength += q.value;
           weight += c;
-          x += c * q.getAttr('x');
-          y += c * q.getAttr('y');
+          x += c * q.x;
+          y += c * q.y;
         }
       }
-      quad.putAttr('x', x / weight);
-      quad.putAttr('y', y / weight);
+      quad.x = x / weight;
+      quad.y = y / weight;
     } else {
       q = quad;
-      q.putAttr('x', q.data!.x);
-      q.putAttr('y', q.data!.y);
+      q.x = q.data!.x;
+      q.y = q.data!.y;
       do {
         strength += _strengthsMap[q!.data?.id]!;
       } while ((q = q.next) != null);
     }
-    quad.putAttr('value', strength);
+    quad.value = strength.toDouble();
     return false;
   }
 
   bool _apply(QuadNode<GraphNode> quad, x1, y1, x2, y2, GraphNode node, double alpha) {
-    if (!jsTrue(quad.getAttr('value'))) return true;
-    num x = quad.getAttr('x') - node.x;
-    num y = quad.getAttr('y') - node.y;
+    if (!jsTrue(quad.value)) return true;
+    num x = quad.x - node.x;
+    num y = quad.y - node.y;
     num w = x2 - x1;
     num l = x * x + y * y;
 
@@ -114,8 +111,8 @@ class ManyBodyForce extends GForce {
         if (l < _minDistance) {
           l = sqrt(_minDistance * l);
         }
-        node.vx += x * quad.getAttr('value') * alpha / l;
-        node.vy += y * quad.getAttr('value') * alpha / l;
+        node.vx += x * quad.value * alpha / l;
+        node.vy += y * quad.value * alpha / l;
       }
       return true;
     } else if (quad.hasChild || l >= _maxDistanceMax) {
